@@ -22,7 +22,7 @@ house_background = pygame.image.load("pygame_demo/assets/house_background.jpg")
 house_background = pygame.transform.scale(house_background, (1000, 500))
 #load chat background image
 chat_background = pygame.image.load("pygame_demo/assets/interior.jpg")
-chat_background = pygame.transform.scale(interior.jpg, (1000, 500))
+chat_background = pygame.transform.scale(chat_background, (1000, 500))
 
 #
 chat_panel = pygame.Rect(0, 0, 700, 130) #create a rectangle manually
