@@ -23,9 +23,12 @@ house_background = pygame.transform.scale(house_background, (1000, 500))
 #load chat background image
 chat_background = pygame.image.load("pygame_demo/assets/interior.png")
 chat_background = pygame.transform.scale(chat_background, (1000, 500))
+#load task 1 background image
+forest_background = pygame.image.load("pygame_demo/assets/forest.png")
+forest_background = pygame.transform.scale(forest_background, (1000, 500))
 
 #
-chat_panel = pygame.Rect(0, 0, 700, 130) #create a rectangle manually
+chat_panel = pygame.Rect(0, 0, 700, 130) #create a rectangle manually f
 chat_panel.centerx = screen.get_width() // 2 #center horizontally
 chat_panel.bottom = screen.get_height() - 20 #place near bottom
 #
@@ -55,6 +58,14 @@ player_rect.x = 270
 player_rect.y = 340
 player_speed = 3
 
+# load task 1 character
+gnome_npc = pygame.image.load("pygame_demo/assets/gnome.png")
+gnome_npc = pygame.transform.scale(gnome_npc, (200, 200))
+gnome_rect = gnome_npc.get_rect()
+gnome_rect.x = 550
+gnome_rect.y = 200
+
+
 #load background music, set volume, and play in loop
 # pygame.mixer.music.load("pygame_demo/assets/music.mp3")
 # pygame.mixer.music.set_volume(0.5)
@@ -73,7 +84,7 @@ clock = pygame.time.Clock()
 #------------
 # game state
 #------------
-game_state = "world"
+game_state = "forest"
 frozen = False #freeze input after player responds once
 #messages to display in chat panel (starting with the default npc greeting)
 messages = ["NPC: Hello! What's your name?"]
@@ -85,6 +96,7 @@ player_input = ""
 #------------
 
 def handle_player_movement(keys):
+
     if keys[pygame.K_LEFT]:
         player_rect.x -= player_speed
     if keys[pygame.K_RIGHT]:
@@ -106,18 +118,19 @@ def check_npc_interaction(keys):
             #reset game state variables
             player_input = ""
             frozen = False
-            messages = ["NPC: Hello! What's your name?"]
+            messages = ["Hello! What's your name?"]
 
 
 def draw_world():
     screen.blit(house_background, (0,0))
     screen.blit(npc_world, world_npc_rect)
     screen.blit(player, player_rect)
-
+    
     if player_rect.colliderect(world_npc_rect):
         popup = font.render("Press E to talk", True, black)
         popup_rect = popup.get_rect(center=(world_npc_rect.centerx, world_npc_rect.top-20))
         screen.blit(popup, popup_rect)
+ 
 
 def draw_chat():
     screen.blit(chat_background, (0,0))
@@ -147,6 +160,18 @@ def draw_chat():
     else:
         input_surface = font.render("> " + player_input, True, white)
     screen.blit(input_surface, (chat_panel.x + 10, y))
+
+def draw_forest():
+    screen.blit(forest_background, (0,0))
+    screen.blit(gnome_npc, gnome_rect)
+    screen.blit(player, player_rect)
+    handle_player_movement(keys)
+
+    # interacting with gnome
+    if player_rect.colliderect(gnome_rect):
+        popup = font.render("Press E to talk", True, white)
+        popup_rect = popup.get_rect(center=(gnome_rect.centerx, gnome_rect.top-20))
+        screen.blit(popup, popup_rect)
 
 
 #----------------
@@ -183,7 +208,7 @@ while running:
                     #simple npc response
                     npc_response = "NPC: Nice to meet you " + player_input
                     messages.append(npc_response) #adds npc's message to chat history
-                    frozen = True #now that player has responded, we want to stop the game
+                    #frozen = True #now that player has responded, we want to stop the game
                     player_input = "" #clear input field
 
                 else:
@@ -203,8 +228,10 @@ while running:
     #------
     if game_state == "world":
         draw_world()
-    else:
+    elif game_state == "chat":
         draw_chat()
+    else:
+        draw_forest()
 
     #----------------------------------------
     # update the display and control fps
