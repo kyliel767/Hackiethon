@@ -73,7 +73,7 @@ clock = pygame.time.Clock()
 #------------
 # game state
 #------------
-game_state = "world"
+game_state = "intro"
 frozen = False #freeze input after player responds once
 #messages to display in chat panel (starting with the default npc greeting)
 messages = ["NPC: Hello! What's your name?"]
@@ -168,6 +168,9 @@ while running:
         
         #detect key presses
         if event.type == pygame.KEYDOWN:
+            # ENTER to start game from intro screen
+            if game_state == "intro" and event.key == pygame.K_RETURN:
+                game_state = "world"
             
             # ESC to exit chat
             if game_state == "chat" and event.key == pygame.K_ESCAPE:
@@ -201,9 +204,20 @@ while running:
     #------
     # draw
     #------
+    if game_state == "intro":
+        # draw intro screen with title
+        screen.fill(black)
+        title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
+        title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
+        
+        # draw instructions below title
+        instructions = font.render("Press ENTER to start.", True, white)
+        instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
+        screen.blit(title, title_rect)
+        screen.blit(instructions, instructions_rect)
     if game_state == "world":
         draw_world()
-    else:
+    if game_state == "chat":
         draw_chat()
 
     #----------------------------------------
