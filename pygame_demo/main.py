@@ -63,14 +63,17 @@ house_background = pygame.transform.scale(house_background, (1020, 780))
 chat_background = pygame.image.load("pygame_demo/assets/interior.jpg")
 chat_background = pygame.transform.scale(chat_background, (1020, 780))
 
-#
-chat_panel = pygame.Rect(0, 0, 700, 130) #create a rectangle manually
-chat_panel.centerx = screen.get_width() // 2 #center horizontally
-chat_panel.bottom = screen.get_height() - 20 #place near bottom
-#
-name_panel = pygame.Rect(0, 0, chat_panel.width, 40)
-name_panel.centerx = screen.get_width() // 2
-name_panel.top = 20 #place at top of the screen
+# load chat panel artwork (no scaling)
+chat_panel = pygame.image.load("pygame_demo/assets/chat_panel.png").convert_alpha()
+chat_panel_rect = chat_panel.get_rect()
+chat_panel_rect.centerx = screen.get_width() // 2
+chat_panel_rect.bottom = screen.get_height() - 20
+
+name_panel = pygame.image.load("pygame_demo/assets/name_panel.png").convert_alpha()
+name_panel_rect = name_panel.get_rect()
+name_panel_rect.centerx = screen.get_width() // 2
+name_panel_rect.top = 20
+
 
 #load npc sprite
 npc_image = pygame.image.load("pygame_demo/assets/red.png")
@@ -84,7 +87,7 @@ world_npc_rect.y = 130
 #
 chat_npc_rect = npc_chat.get_rect()
 chat_npc_rect.centerx = screen.get_width() // 2
-chat_npc_rect.bottom = chat_panel.y + 100
+chat_npc_rect.bottom = chat_panel_rect.y + 100
 
 #player sprite
 player = pygame.image.load("pygame_demo/assets/wolf.png")
@@ -105,7 +108,7 @@ player_speed = 3
 black = (0, 0, 0)
 white = (255, 255, 255)
 #default font for displaying text
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font(None, 32)
 #clock for controlling frame rate (i.e. how fast the game loop runs)
 clock = pygame.time.Clock()
 
@@ -127,6 +130,25 @@ conversation_history = [
         "content": system_prompt,
     }
 ]
+
+
+def wrap_text(text, font, max_width):
+    words = text.split(" ")
+    lines = []
+    current = ""
+    for word in words:
+        if current:
+            test = current + " " + word
+        else:
+            test = word
+        if font.size(test)[0] <= max_width:
+            current = test
+        else:
+            lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines
 
 
 def extract_status_from_response(text):
@@ -212,7 +234,7 @@ def check_npc_interaction(keys):
             conversation_history = [{"role": "system", "content": system_prompt}]
 
             # ask first line from the AI to start the conversation
-            start_npc_response("Hi! Please say a greeting as Little Red Riding Hood.")
+            start_npc_response("Hi! Please say a greeting")
 
 
 def draw_world():
@@ -231,28 +253,38 @@ def draw_chat():
     screen.blit(npc_chat, chat_npc_rect)
 
     #draw chat panel for showing messages
-    pygame.draw.rect(screen, black, chat_panel)
+    screen.blit(chat_panel, chat_panel_rect)
 
     #draw npc's name panel
-    pygame.draw.rect(screen, black, name_panel)
+    screen.blit(name_panel, name_panel_rect)
+
+    #draw 
     npc_name = "Little Red Riding Hood"
     name_surface = font.render(npc_name, True, white)
-    name_rect = name_surface.get_rect(center=name_panel.center)
+    name_rect = name_surface.get_rect(center=name_panel_rect.center)
     screen.blit(name_surface, name_rect)
 
-    #draw all messages in the chat panel
-    y = chat_panel.y + 10
+    #draw all messages in the chat panel (wrapped)
+    padding_x = 20
+    padding_y = 18
+    y = chat_panel_rect.y + padding_y
+    max_width = chat_panel_rect.width - (padding_x * 2)
+    line_height = font.get_linesize() + 2
+
     for msg in messages:
-        text_surface = font.render(msg, True, white)
-        screen.blit(text_surface, (chat_panel.x + 10, y))
-        y += 30 #move down for next line
+        for line in wrap_text(msg, font, max_width):
+            text_surface = font.render(line, True, white)
+            screen.blit(text_surface, (chat_panel_rect.x + padding_x, y))
+            y += line_height
+            if y > chat_panel_rect.bottom - padding_y - 10:
+                break
 
     #draw player input text dynamically
     if waiting_for_ai:
-        input_surface = font.render("NPC is thinking...", True, white)
+        input_surface = font.render("Thinking...", True, white)
     else:
         input_surface = font.render("> " + player_input, True, white)
-    screen.blit(input_surface, (chat_panel.x + 10, y))
+    screen.blit(input_surface, (chat_panel_rect.x + padding_x, y))
 
 
 #----------------
