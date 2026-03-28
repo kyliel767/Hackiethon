@@ -1,0 +1,8 @@
+.env
+__pycache__
+.gitignore
+/src/__pycache__
+.vscode
+.venv
+.env.local.DS_Store
+.DS_Store
