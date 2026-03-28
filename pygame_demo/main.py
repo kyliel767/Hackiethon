@@ -211,8 +211,6 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-            # ENTER to start game from intro screen
-            if game_state == "intro" and event.key == pygame.K_RETURN:
                 game_state = "world"
             
             # handle chat events if in chat state
