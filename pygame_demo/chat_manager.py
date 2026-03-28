@@ -26,7 +26,9 @@ class ChatManager:
         self.player_input = ""
         self.waiting_for_ai = False
         self.conversation_history = []
-
+        self.padding_x = 40
+        self.padding_y = 36
+    
     def enter_chat(self):
         # reset chat state for a fresh interaction
         self.player_input = ""
@@ -101,9 +103,15 @@ class ChatManager:
                     self.messages.append("> " + self.player_input.strip())
                     self.start_npc_response(self.player_input.strip())
                     self.player_input = "" 
-                # capture printable characters
+
+                # capture printable characters with a strict 2-line limit
                 elif event.unicode and event.unicode.isprintable():
-                    self.player_input += event.unicode
+                    max_width = self.chat_panel_rect.width - (self.padding_x * 2)
+                    
+                    # only update input if the helper says it fits
+                    if self.can_add_character(event.unicode, max_width):
+                        self.player_input += event.unicode
+                        
         # stay in chat state by default
         return "chat"
 
@@ -123,24 +131,49 @@ class ChatManager:
         self.screen.blit(name_surface, name_rect)
 
         # draw all conversation lines within the text box
-        padding_x = 20
-        padding_y = 18
-        y = self.chat_panel_rect.y + padding_y
-        max_width = self.chat_panel_rect.width - (padding_x * 2)
+        y = self.chat_panel_rect.y + self.padding_y
+        max_width = self.chat_panel_rect.width - (self.padding_x * 2)
         line_height = self.font.get_linesize() + 2
 
+        # render npc messages with wrapping
         for msg in self.messages:
             for line in self.wrap_text(msg, self.font, max_width):
                 text_surface = self.font.render(line, True, (255, 255, 255))
-                self.screen.blit(text_surface, (self.chat_panel_rect.x + padding_x, y))
+                self.screen.blit(text_surface, (self.chat_panel_rect.x + self.padding_x, y))
                 y += line_height
                 # stop drawing if we run out of vertical space
-                if y > self.chat_panel_rect.bottom - padding_y - 10:
+                if y > self.chat_panel_rect.bottom - self.padding_y - 10:
                     break
 
         # show current player typing or thinking status
         if self.waiting_for_ai:
             input_surface = self.font.render("Thinking...", True, (255, 255, 255))
+            self.screen.blit(input_surface, (self.chat_panel_rect.x + self.padding_x, y))
         else:
-            input_surface = self.font.render("> " + self.player_input, True, (255, 255, 255))
-        self.screen.blit(input_surface, (self.chat_panel_rect.x + padding_x, y))
+            # wrap the player input text to match npc style
+            player_lines = self.wrap_text("> " + self.player_input, self.font, max_width)
+            
+            # limit the display to the first 2 lines (max 1 wrap)
+            display_lines = player_lines[:2]
+            
+            for line in display_lines:
+                input_surface = self.font.render(line, True, (255, 255, 255))
+                self.screen.blit(input_surface, (self.chat_panel_rect.x + self.padding_x, y))
+                y += line_height
+                # final safety check for panel height
+                if y > self.chat_panel_rect.bottom - self.padding_y:
+                    break
+
+    def can_add_character(self, new_char, max_width):
+        # create a preview of what the string would look like with the new key
+        preview_text = "> " + self.player_input + new_char
+        
+        # calculate how many lines the preview would occupy using existing wrap logic
+        test_lines = self.wrap_text(preview_text, self.font, max_width)
+        
+        # return true if the text stays within 2 lines (1 wrap)
+        # this prevents the player from typing beyond the visual limit
+        if len(test_lines) <= 2:
+            return True
+        else:
+            return False
