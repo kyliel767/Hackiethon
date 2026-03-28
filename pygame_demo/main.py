@@ -19,17 +19,9 @@ load_dotenv()
 from dotenv import load_dotenv
 from groq import Groq
 
- # import chat manager class
-from chat_manager import ChatManager
-# import AI client and system prompt
-from ai_services import AIClient, SYSTEM_PROMPT
-
-# load environment variables for API key
-load_dotenv()
-
 # initialise all pygame modules (graphics, input, etc.)
 pygame.init()
-# initialise pygame's mixer for playing sound/music
+
 # initialise pygame's mixer for playing sound/music
 pygame.mixer.init()
 
@@ -105,7 +97,6 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 32)
-font = pygame.font.Font(None, 32)
 #clock for controlling frame rate (i.e. how fast the game loop runs)
 clock = pygame.time.Clock()
 
@@ -133,7 +124,6 @@ chat_manager = ChatManager(screen, ai_client, SYSTEM_PROMPT, font, chat_assets)
 # game state
 #------------
 game_state = "intro"
-game_state = "intro"
 
 #------------
 # functions
@@ -155,11 +145,9 @@ def handle_player_movement(keys):
 
 def check_npc_interaction(keys):
     global game_state
-    global game_state
     if player_rect.colliderect(world_npc_rect):
         if keys[pygame.K_e]:
             game_state = "chat"
-            chat_manager.enter_chat()
             chat_manager.enter_chat()
 
 def draw_world():
@@ -212,10 +200,6 @@ while running:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
                 game_state = "world"
-            
-            # handle chat events if in chat state
-            if game_state == "chat":
-                game_state = chat_manager.handle_event(event)
             
             # handle chat events if in chat state
             if game_state == "chat":
