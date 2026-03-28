@@ -224,7 +224,7 @@ while running:
         screen.blit(instructions, instructions_rect)
 
 
-
+        #from previous code
 
         # draw intro screen with title
         #screen.fill(black)
