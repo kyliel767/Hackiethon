@@ -217,7 +217,7 @@ while running:
     #------
     if game_state == "intro":
         draw_intro()
-    if game_state == "world":
+    elif game_state == "world":
         draw_world()
     elif game_state == "chat":
         chat_manager.draw()
