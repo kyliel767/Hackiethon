@@ -93,7 +93,7 @@ class ChatManager:
                 return "world"
 
             if not self.waiting_for_ai:
-                # delete characters
+                # delete characters if backspace is pressed
                 if event.key == pygame.K_BACKSPACE:
                     self.player_input = self.player_input[:-1]
                 # send message on enter
