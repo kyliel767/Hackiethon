@@ -1,12 +1,51 @@
 #--------------------------
 # imports & initialisation
 #--------------------------
+import os
+import threading
+
 import pygame
 import sys
+from dotenv import load_dotenv
+from groq import Groq
 
-#initialise all pygame modules (graphics, input, etc.)
+# load environment variables for API key
+load_dotenv()
+
+# this is the prompt
+
+# Prompts
+system_prompt = """
+You are a kind and curious girl. You love exploring the forest and spending time with your grandmother.
+You are friendly, brave, and always eager to learn new things. 
+You have a strong connection to nature and often talk to animals in the forest.
+You have arrived at your grandmother's house after you have been traveling through the woods
+You greet your grandmother without suspicion.
+After your grandmother greets you, you notice something strange about her appearance.
+You can ask her about one of the following, only ONE at a time:
+- great big eyes
+- great big ears
+- great big teeth
+- great big furry coat
+Your task is to figure out what is wrong with your grandmother, if there is something wrong.
+If it seems that you are in danger or that your grandmother is a wolf in disguise, you should scream for help.
+Otherwise, you should have a friendly conversation with your grandmother and ask her about her day.
+
+RULES:
+- track your internal state and feelings as you interact with your grandmother.
+- At the END of every response, you MUST include a status tag in square brackets indicating how the date is going:
+    [STATUS:ongoing] - if you are still unsure about your grandmother and want to keep talking
+    [STATUS:accepted] - if grandmother keeps kind tone, mentions love, care, and normal family behavior. If you do not suspect she is a wolf in disguise.
+    [STATUS:rejected] - If grandmother gives clear danger signs like talking about eating you
+- The status tag must be the very last thing in your message.
+- Never mention or explain the status tags.
+- Do not convey your actions, for example "*hug*". You are only speaking your dialogue. 
+- Keep your replies to a maximum of 1 sentence. Be concise.
+"""
+
+# initialise all pygame modules (graphics, input, etc.)
 pygame.init()
-#initialise pygame's mixer for playing sound/music
+# initialise pygame's mixer for playing sound/music
 pygame.mixer.init()
 
 #--------------------------------
@@ -73,12 +112,75 @@ clock = pygame.time.Clock()
 #------------
 # game state
 #------------
-game_state = "world"
-frozen = False #freeze input after player responds once
-#messages to display in chat panel (starting with the default npc greeting)
-messages = ["NPC: Hello! What's your name?"]
+game_state = "intro"
+waiting_for_ai = False
+#messages to display in chat panel (AI will populate greeting dynamically)
+messages = []
 #player's current typed input
 player_input = ""
+
+# AI conversation history and prompt (NPC behavior)
+GROQ_MODEL = "llama-3.3-70b-versatile"
+conversation_history = [
+    {
+        "role": "system",
+        "content": system_prompt,
+    }
+]
+
+
+def extract_status_from_response(text):
+    for status in ["accepted", "rejected", "ongoing"]:
+        tag = f"[STATUS:{status}]"
+        if tag in text:
+            return text.replace(tag, "").strip(), status
+    return text.strip(), "ongoing"
+
+
+class AIClient:
+    def __init__(self):
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            print("Missing GROQ_API_KEY in .env")
+            sys.exit(1)
+        self.client = Groq(api_key=api_key)
+
+    def send_messages(self, messages):
+        try:
+            response = self.client.chat.completions.create(
+                model=GROQ_MODEL,
+                messages=messages,
+                max_tokens=200,
+                temperature=0.7,
+            )
+            return response.choices[0].message.content
+        except Exception as error:
+            return f"[AI Error: {error}] [STATUS:ongoing]"
+
+
+ai_client = AIClient()
+
+
+def ask_npc(player_text):
+    global waiting_for_ai, conversation_history
+    waiting_for_ai = True
+    conversation_history.append({"role": "user", "content": player_text})
+    ai_response = ai_client.send_messages(conversation_history)
+    conversation_history.append({"role": "assistant", "content": ai_response})
+    clean, status = extract_status_from_response(ai_response)
+    waiting_for_ai = False
+    return clean, status
+
+
+def start_npc_response(user_text):
+    # start AI call in background so the main loop stays responsive
+    def worker():
+        clean, status = ask_npc(user_text)
+        messages.append("NPC: " + clean)
+
+    thread = threading.Thread(target=worker, daemon=True)
+    thread.start()
+
 
 #------------
 # functions
@@ -99,14 +201,18 @@ def handle_player_movement(keys):
     player_rect.y = max(0, min(player_rect.y, screen.get_height() - player_rect.height))
 
 def check_npc_interaction(keys):
-    global game_state, player_input, frozen, messages
+    global game_state, player_input, messages, waiting_for_ai, conversation_history
     if player_rect.colliderect(world_npc_rect):
         if keys[pygame.K_e]:
             game_state = "chat"
-            #reset game state variables
+            # reset game state variables
             player_input = ""
-            frozen = False
-            messages = ["NPC: Hello! What's your name?"]
+            waiting_for_ai = False
+            messages = []
+            conversation_history = [{"role": "system", "content": system_prompt}]
+
+            # ask first line from the AI to start the conversation
+            start_npc_response("Hi! Please say a greeting as Little Red Riding Hood.")
 
 
 def draw_world():
@@ -142,8 +248,8 @@ def draw_chat():
         y += 30 #move down for next line
 
     #draw player input text dynamically
-    if frozen:
-        input_surface = font.render("", True, white)
+    if waiting_for_ai:
+        input_surface = font.render("NPC is thinking...", True, white)
     else:
         input_surface = font.render("> " + player_input, True, white)
     screen.blit(input_surface, (chat_panel.x + 10, y))
@@ -168,25 +274,25 @@ while running:
         
         #detect key presses
         if event.type == pygame.KEYDOWN:
+            # ENTER to start game from intro screen
+            if game_state == "intro" and event.key == pygame.K_RETURN:
+                game_state = "world"
             
             # ESC to exit chat
             if game_state == "chat" and event.key == pygame.K_ESCAPE:
                 game_state = "world"
 
-            if game_state == "chat" and not frozen: #only allow typing if not frozen
+            if game_state == "chat" and not waiting_for_ai:
                 #deleting last character
                 if event.key == pygame.K_BACKSPACE:
                     player_input = player_input[:-1]
                 #entering input
-                elif event.key == pygame.K_RETURN:
-                    messages.append("> " + player_input) #adds player's message to chat history
-                    #simple npc response
-                    npc_response = "NPC: Nice to meet you " + player_input
-                    messages.append(npc_response) #adds npc's message to chat history
-                    frozen = True #now that player has responded, we want to stop the game
+                elif event.key == pygame.K_RETURN and player_input.strip():
+                    messages.append("> " + player_input.strip()) #adds player's message to chat history
+                    start_npc_response(player_input.strip())
                     player_input = "" #clear input field
 
-                else:
+                elif event.unicode and event.unicode.isprintable():
                     #add typed character to current input
                     player_input += event.unicode
 
@@ -194,16 +300,27 @@ while running:
     # world update
     #--------------
     if game_state == "world":
-        frozen = False
+        waiting_for_ai = False
         handle_player_movement(keys)
         check_npc_interaction(keys)
 
     #------
     # draw
     #------
+    if game_state == "intro":
+        # draw intro screen with title
+        screen.fill(black)
+        title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
+        title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
+        
+        # draw instructions below title
+        instructions = font.render("Press ENTER to start.", True, white)
+        instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
+        screen.blit(title, title_rect)
+        screen.blit(instructions, instructions_rect)
     if game_state == "world":
         draw_world()
-    else:
+    if game_state == "chat":
         draw_chat()
 
     #----------------------------------------
