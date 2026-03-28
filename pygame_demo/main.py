@@ -41,7 +41,7 @@ chat_background = pygame.image.load("pygame_demo/assets/interior.png")
 chat_background = pygame.transform.scale(chat_background, (1020, 780))
 #load task 1 background image
 forest_background = pygame.image.load("pygame_demo/assets/forest.png")
-forest_background = pygame.transform.scale(forest_background, (1000, 500))
+forest_background = pygame.transform.scale(forest_background, (1020, 780))
 
 # load chat panel artwork (no scaling)
 chat_panel = pygame.image.load("pygame_demo/assets/chat_panel.png").convert_alpha()
@@ -77,12 +77,23 @@ player_rect.x = 270
 player_rect.y = 340
 player_speed = 3
 
-# load task 1 character
+# load gnome
 gnome_npc = pygame.image.load("pygame_demo/assets/gnome.png")
 gnome_npc = pygame.transform.scale(gnome_npc, (200, 200))
 gnome_rect = gnome_npc.get_rect()
 gnome_rect.x = 550
 gnome_rect.y = 200
+
+gnome_chat = pygame.transform.scale(gnome_npc, (400, 400))
+gnome_chat_rect = gnome_chat.get_rect()
+gnome_chat_rect.centerx = screen.get_width() // 2
+gnome_chat_rect.bottom = chat_panel_rect.y + 100
+gnome_chat_rect.bottom = chat_panel_rect.y + 100
+
+# load gnome interaction background
+forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
+forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
+
 
 
 #load background music, set volume, and play in loop
@@ -161,10 +172,28 @@ def draw_world():
         screen.blit(popup, popup_rect)
 
 def draw_forest():
+    global game_state
     screen.blit(forest_background, (0,0))
     screen.blit(gnome_npc, gnome_rect)
     screen.blit(player, player_rect)
     handle_player_movement(keys)
+
+    # interacting with gnome
+    if player_rect.colliderect(gnome_rect):
+        popup = font.render("Press E to talk", True, white)
+        popup_rect = popup.get_rect(center=(gnome_rect.centerx, gnome_rect.top-20))
+        screen.blit(popup, popup_rect)
+
+        if keys[pygame.K_e]:
+            game_state = "minigame"
+
+# talking to gnome
+def draw_minigame():
+    global game_state
+    screen.blit(forest_chat, (0,0))
+    screen.blit(gnome_chat, gnome_chat_rect)
+    
+
 
 def draw_intro():
         # draw intro screen with title
@@ -199,7 +228,7 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "world"
+                game_state = "forest"
             
             # handle chat events if in chat state
             if game_state == "chat":
@@ -223,6 +252,8 @@ while running:
         chat_manager.draw()
     elif game_state == "forest":
         draw_forest()
+    elif game_state == "minigame":
+        draw_minigame()
 
     #----------------------------------------
     # update the display and control fps
