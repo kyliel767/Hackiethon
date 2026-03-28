@@ -17,6 +17,10 @@ screen = pygame.display.set_mode((1000, 500))
 #set the title of the window
 pygame.display.set_caption("NPC Chat Demo")
 
+#load intro background image
+intro_background = pygame.image.load("pygame_demo/assets/intro.png")
+intro_background = pygame.transform.scale(intro_background, (1000, 500))
+
 #load world background image
 house_background = pygame.image.load("pygame_demo/assets/house_background.jpg")
 house_background = pygame.transform.scale(house_background, (1000, 500))
@@ -205,16 +209,24 @@ while running:
     # draw
     #------
     if game_state == "intro":
+
+        screen.blit(intro_background, (0, 0))  # background first
+
+    
+
         # draw intro screen with title
-        screen.fill(black)
-        title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
-        title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
+        #screen.fill(black)
+    
+        #title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
+        #title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
         
         # draw instructions below title
-        instructions = font.render("Press ENTER to start.", True, white)
-        instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
-        screen.blit(title, title_rect)
-        screen.blit(instructions, instructions_rect)
+        #instructions = font.render("Press ENTER to start.", True, white)
+        #instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
+        #screen.blit(title, title_rect)
+        #screen.blit(instructions, instructions_rect)
+
+        
     if game_state == "world":
         draw_world()
     if game_state == "chat":
