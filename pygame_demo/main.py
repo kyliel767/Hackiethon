@@ -21,7 +21,7 @@ pygame.display.set_caption("NPC Chat Demo")
 house_background = pygame.image.load("pygame_demo/assets/house.png")
 house_background = pygame.transform.scale(house_background, (1000, 500))
 #load chat background image
-chat_background = pygame.image.load("pygame_demo/assets/interior.jpg")
+chat_background = pygame.image.load("pygame_demo/assets/interior.png")
 chat_background = pygame.transform.scale(chat_background, (1000, 500))
 
 #
@@ -115,7 +115,7 @@ def draw_world():
     screen.blit(player, player_rect)
 
     if player_rect.colliderect(world_npc_rect):
-        popup = font.render("Press E to talk", True, white)
+        popup = font.render("Press E to talk", True, black)
         popup_rect = popup.get_rect(center=(world_npc_rect.centerx, world_npc_rect.top-20))
         screen.blit(popup, popup_rect)
 
