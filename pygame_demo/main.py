@@ -35,7 +35,7 @@ name_panel.top = 20 #place at top of the screen
 
 #load npc sprite
 npc_image = pygame.image.load("pygame_demo/assets/red.png")
-npc_world = pygame.transform.scale(npc_image, (70, 70))
+npc_world = pygame.transform.scale(npc_image, (120, 120))
 npc_chat = pygame.transform.scale(npc_image, (400, 400))
 #
 world_npc_rect = npc_world.get_rect() #create a rectangle from the loaded npc image
@@ -49,7 +49,7 @@ chat_npc_rect.bottom = chat_panel.y + 100
 
 #player sprite
 player = pygame.image.load("pygame_demo/assets/wolf.png")
-player = pygame.transform.scale(player, (70, 70))
+player = pygame.transform.scale(player, (120, 120))
 player_rect = player.get_rect()
 player_rect.x = 50
 player_rect.y = 260
