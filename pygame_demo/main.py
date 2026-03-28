@@ -13,16 +13,16 @@ pygame.mixer.init()
 # window, assets and image setup
 #--------------------------------
 #create game window of width height 
-screen = pygame.display.set_mode((1020, 780))
+screen = pygame.display.set_mode((1000, 500))
 #set the title of the window
 pygame.display.set_caption("NPC Chat Demo")
 
 #load world background image
 house_background = pygame.image.load("pygame_demo/assets/house.png")
-house_background = pygame.transform.scale(house_background, (1020, 780))
+house_background = pygame.transform.scale(house_background, (1000, 500))
 #load chat background image
 chat_background = pygame.image.load("pygame_demo/assets/interior.jpg")
-chat_background = pygame.transform.scale(chat_background, (1020, 780))
+chat_background = pygame.transform.scale(chat_background, (1000, 500))
 
 #
 chat_panel = pygame.Rect(0, 0, 700, 130) #create a rectangle manually
@@ -40,7 +40,7 @@ npc_chat = pygame.transform.scale(npc_image, (400, 400))
 #
 world_npc_rect = npc_world.get_rect() #create a rectangle from the loaded npc image
 world_npc_rect.centerx = screen.get_width() // 2 #center horizontally
-world_npc_rect.x = 650
+world_npc_rect.x = 550
 world_npc_rect.y = 130
 #
 chat_npc_rect = npc_chat.get_rect()
@@ -51,8 +51,8 @@ chat_npc_rect.bottom = chat_panel.y + 100
 player = pygame.image.load("pygame_demo/assets/wolf.png")
 player = pygame.transform.scale(player, (120, 120))
 player_rect = player.get_rect()
-player_rect.x = 50
-player_rect.y = 260
+player_rect.x = 270
+player_rect.y = 340
 player_speed = 3
 
 #load background music, set volume, and play in loop
