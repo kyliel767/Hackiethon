@@ -45,7 +45,7 @@ pygame.display.set_caption("NPC Chat Demo")
 house_background = pygame.image.load("pygame_demo/assets/house.png")
 house_background = pygame.transform.scale(house_background, (1020, 780))
 #load chat background image
-chat_background = pygame.image.load("pygame_demo/assets/interior.jpg")
+chat_background = pygame.image.load("pygame_demo/assets/interior.png")
 chat_background = pygame.transform.scale(chat_background, (1020, 780))
 #load task 1 background image
 forest_background = pygame.image.load("pygame_demo/assets/forest.png")
