@@ -128,7 +128,7 @@ gnome_ai = AIClient()
 #-------------------------
 # chat manager setup
 #-------------------------
-chat_assets = {
+red_chat_assets = {
     'chat_bg': chat_background,
     'chat_panel': chat_panel,
     'chat_panel_rect': chat_panel_rect,
@@ -138,8 +138,18 @@ chat_assets = {
     'chat_npc_rect': chat_npc_rect
 }
 
-red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, chat_assets, npc_name = "Little Red Riding Hood")
-gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, chat_assets, npc_name = "Gnome")
+gnome_chat_assets = {
+    'chat_bg': forest_chat,
+    'chat_panel': chat_panel,
+    'chat_panel_rect': chat_panel_rect,
+    'name_panel': name_panel,
+    'name_panel_rect': name_panel_rect,
+    'npc_chat': gnome_chat,
+    'chat_npc_rect': gnome_chat_rect
+}
+
+red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, red_chat_assets, npc_name = "Little Red Riding Hood")
+gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gnome_chat_assets, npc_name = "Gnome")
 
 #------------
 # game state
