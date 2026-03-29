@@ -43,6 +43,13 @@ forest_background = pygame.transform.scale(forest_background, (1020, 780))
 forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
 forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 
+#load failure ending frames into a list
+walk_frames = []
+for i in range(1, 7):
+    frame = pygame.image.load(f"assets/end{i}.png")
+    frame = pygame.transform.scale(frame, (1020, 780))
+    walk_frames.append(frame)
+
 # load chat panel artwork (no scaling)
 chat_panel = pygame.image.load("pygame_demo/assets/chat_panel.png").convert_alpha()
 chat_panel_rect = chat_panel.get_rect()
@@ -209,14 +216,7 @@ def draw_intro():
     screen.blit(instructions, instructions_rect)
 
 def draw_ending():
-    walk_frames = []
-
-    # load each frame to a walk_frames
-    for i in range(1, 7):
-        frame = pygame.image.load(f"assets/end{i}.png")
-        frame = pygame.transform.scale(frame, (1020, 780))
-        walk_frames.append(frame)
-
+    
     # animation variables
     current_frame = 0
     animation_timer = 0
@@ -230,6 +230,8 @@ def draw_ending():
         animation_timer = 0
 
     screen.blit(walk_frames[current_frame], (x, y))
+
+    draw_animated_text(screen, ["YOU", "FAIL!"], font, screen.get_width()//2, screen.get_height()//2, white)
 
 #----------------
 # main game loop
@@ -276,7 +278,7 @@ while running:
     # draw
     #------
     if game_state == "intro":
-        draw_intro()
+        draw_ending()
     if game_state == "house":
         draw_house()
     elif game_state == "chat":
@@ -285,6 +287,8 @@ while running:
         draw_forest()
     elif game_state == "minigame":
         gnome_chat_manager.draw()
+    elif game_state == "ending":
+        draw_ending()
     
 
     #----------------------------------------
