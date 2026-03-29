@@ -13,7 +13,7 @@ from chat_manager import ChatManager
 # import AI client and system prompt
 from ai_services import AIClient, RED_SYSTEM_PROMPT, GNOME_SYSTEM_PROMPT
 # import narration manager
-from narration_manager import NarrationManager, HOUSE_NARRATION
+from narration_manager import NarrationManager, HOUSE_NARRATION, FOREST_NARRATION
 
 # load environment variables for API key
 load_dotenv()
@@ -258,20 +258,28 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "forest"
+                game_state = "forest_narration"
+                narrator.start_narration(FOREST_NARRATION)
             
             # handle chat events if in chat state
-            if game_state == "chat":
+            elif game_state == "chat":
                 game_state = red_chat_manager.handle_event(event)
             
-            if game_state == "minigame":
+            elif game_state == "minigame":
                 game_state = gnome_chat_manager.handle_event(event)
             
             # handle narration events
-            if game_state == "house_narration":
+            elif game_state == "house_narration":
                 if event.key == pygame.K_RETURN:
                     if narrator.is_finished():
                         game_state = "house" # unlock player movement
+                    else:
+                        # finish the typewriter effect instantly
+                        narrator.char_index = len(narrator.full_text)
+            elif game_state == "forest_narration":
+                if event.key == pygame.K_RETURN:
+                    if narrator.is_finished():
+                        game_state = "forest" # unlock player movement
                     else:
                         # finish the typewriter effect instantly
                         narrator.char_index = len(narrator.full_text)
@@ -279,17 +287,13 @@ while running:
     #--------------
     # state update
     #--------------
-    if game_state == "house":
+    if game_state == "house" or game_state == "forest":
         handle_player_movement(keys)
         check_npc_interaction(keys)
     
     # logic for house narration (no movement allowed)
-    if game_state == "house_narration":
+    if game_state == "house_narration" or game_state == "forest_narration":
         narrator.update()
-    
-    if game_state == "forest":
-        handle_player_movement(keys)
-        check_npc_interaction(keys)
 
     #------
     # draw
@@ -302,8 +306,10 @@ while running:
             narrator.draw() # draw panel on top of room
     elif game_state == "chat":
         red_chat_manager.draw()
-    elif game_state == "forest":
+    elif game_state == "forest" or game_state == "forest_narration":
         draw_forest()
+        if game_state == "forest_narration":
+            narrator.draw()
     elif game_state == "minigame":
         gnome_chat_manager.draw()
 
