@@ -199,6 +199,6 @@ class ChatManager:
                 return "game_over"
         elif self.npc_name == "Gnome":
             if self.status == "change":
-                return "house"
+                return "house_narration"
         return current_state
 
