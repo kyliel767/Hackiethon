@@ -6,11 +6,12 @@ import pygame
 import sys
 from dotenv import load_dotenv
 from groq import Groq
+import random # for random number game
 
  # import chat manager class
 from chat_manager import ChatManager
 # import AI client and system prompt
-from ai_services import AIClient, SYSTEM_PROMPT
+from ai_services import AIClient, RED_SYSTEM_PROMPT, GNOME_SYSTEM_PROMPT
 
 # load environment variables for API key
 load_dotenv()
@@ -41,7 +42,7 @@ chat_background = pygame.image.load("pygame_demo/assets/interior.png")
 chat_background = pygame.transform.scale(chat_background, (1020, 780))
 #load task 1 background image
 forest_background = pygame.image.load("pygame_demo/assets/forest.png")
-forest_background = pygame.transform.scale(forest_background, (1000, 500))
+forest_background = pygame.transform.scale(forest_background, (1020, 780))
 
 # load chat panel artwork (no scaling)
 chat_panel = pygame.image.load("pygame_demo/assets/chat_panel.png").convert_alpha()
@@ -77,12 +78,22 @@ player_rect.x = 270
 player_rect.y = 340
 player_speed = 3
 
-# load task 1 character
+# load gnome
 gnome_npc = pygame.image.load("pygame_demo/assets/gnome.png")
 gnome_npc = pygame.transform.scale(gnome_npc, (200, 200))
 gnome_rect = gnome_npc.get_rect()
 gnome_rect.x = 550
 gnome_rect.y = 200
+
+gnome_chat = pygame.transform.scale(gnome_npc, (400, 400))
+gnome_chat_rect = gnome_chat.get_rect()
+gnome_chat_rect.centerx = screen.get_width() // 2
+gnome_chat_rect.bottom = chat_panel_rect.y + 100
+gnome_chat_rect.bottom = chat_panel_rect.y + 100
+
+# load gnome interaction background
+forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
+forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 
 
 #load background music, set volume, and play in loop
@@ -98,17 +109,26 @@ white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 32)
 #clock for controlling frame rate (i.e. how fast the game loop runs)
+
+#--------------------------------
+# for minigame
+#--------------------------------
+number = random.randint(1, 100)
+player_text = ""
+feedback_text = ""
+
 clock = pygame.time.Clock()
 
 #-------------------------
 # AI client setup
 #-------------------------
-ai_client = AIClient()
+red_ai = AIClient()
+gnome_ai = AIClient()
 
 #-------------------------
 # chat manager setup
 #-------------------------
-chat_assets = {
+red_chat_assets = {
     'chat_bg': chat_background,
     'chat_panel': chat_panel,
     'chat_panel_rect': chat_panel_rect,
@@ -118,7 +138,22 @@ chat_assets = {
     'chat_npc_rect': chat_npc_rect
 }
 
-chat_manager = ChatManager(screen, ai_client, SYSTEM_PROMPT, font, chat_assets)
+"""
+NOTE: GNOME CHAT ASSETS TO BE ADDED, THESE ARE JUST PLACEHOLDERS
+"""
+
+gnome_chat_assets = {
+    'chat_bg': forest_chat,
+    'chat_panel': chat_panel,
+    'chat_panel_rect': chat_panel_rect,
+    'name_panel': name_panel,
+    'name_panel_rect': name_panel_rect,
+    'npc_chat': gnome_chat,
+    'chat_npc_rect': gnome_chat_rect
+}
+
+red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, red_chat_assets, npc_name = "Little Red Riding Hood")
+gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gnome_chat_assets, npc_name = "Gnome")
 
 #------------
 # game state
@@ -148,7 +183,7 @@ def check_npc_interaction(keys):
     if player_rect.colliderect(world_npc_rect):
         if keys[pygame.K_e]:
             game_state = "chat"
-            chat_manager.enter_chat()
+            red_chat_manager.enter_chat()
 
 def draw_world():
     screen.blit(house_background, (0,0))
@@ -161,22 +196,60 @@ def draw_world():
         screen.blit(popup, popup_rect)
 
 def draw_forest():
+    global game_state
     screen.blit(forest_background, (0,0))
     screen.blit(gnome_npc, gnome_rect)
     screen.blit(player, player_rect)
     handle_player_movement(keys)
 
+    # interacting with gnome
+    if player_rect.colliderect(gnome_rect):
+        popup = font.render("Press E to talk", True, white)
+        popup_rect = popup.get_rect(center=(gnome_rect.centerx, gnome_rect.top-20))
+        screen.blit(popup, popup_rect)
+
+        if keys[pygame.K_e]:
+            game_state = "minigame"
+
+# talking to gnome
+def draw_minigame():
+    global game_state
+    screen.blit(forest_chat, (0,0))
+    screen.blit(gnome_chat, gnome_chat_rect)
+    gnome = font.render('You want to cross this forest? If you guess the ' \
+    'number in my mind, I\'ll let you pass', True, black)
+    screen.blit(gnome, (10, 10))
+    handle_text_input(event)
+
+
+# input from player
+def handle_text_input(event):
+    global player_text
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_BACKSPACE:
+            player_text = player_text[:-1]
+        elif event.key == pygame.K_RETURN:
+            submit_guess(player_text)
+            player_text = ""
+        else:
+            player_text += event.unicode
+
+# whether player guessed number
+def submit_guess(text):
+    test = font.render("text", True, black)
+    screen.blit(test, (40, 40))
+
 def draw_intro():
-        # draw intro screen with title
-        screen.fill(black)
-        title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
-        title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
+     # draw intro screen with title
+    screen.fill(black)
+    title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
+    title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
         
-        # draw instructions below title
-        instructions = font.render("Press ENTER to start.", True, white)
-        instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
-        screen.blit(title, title_rect)
-        screen.blit(instructions, instructions_rect)
+    # draw instructions below title
+    instructions = font.render("Press ENTER to start.", True, white)
+    instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
+    screen.blit(title, title_rect)
+    screen.blit(instructions, instructions_rect)
 
 #----------------
 # main game loop
@@ -199,11 +272,11 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "world"
+                game_state = "forest"
             
             # handle chat events if in chat state
             if game_state == "chat":
-                game_state = chat_manager.handle_event(event)
+                game_state = red_chat_manager.handle_event(event)
 
     #--------------
     # world update
@@ -220,9 +293,11 @@ while running:
     elif game_state == "world":
         draw_world()
     elif game_state == "chat":
-        chat_manager.draw()
+        red_chat_manager.draw()
     elif game_state == "forest":
         draw_forest()
+    elif game_state == "minigame":
+        draw_minigame()
 
     #----------------------------------------
     # update the display and control fps
