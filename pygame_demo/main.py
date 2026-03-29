@@ -1,65 +1,105 @@
 #--------------------------
 # imports & initialisation
 #--------------------------
+import os
 import pygame
 import sys
 import math
+from dotenv import load_dotenv
+from groq import Groq
 
-#initialise all pygame modules (graphics, input, etc.)
+ # import chat manager class
+from chat_manager import ChatManager
+# import AI client and system prompt
+from ai_services import AIClient, RED_SYSTEM_PROMPT, GNOME_SYSTEM_PROMPT
+
+# load environment variables for API key
+load_dotenv()
+
+# initialise all pygame modules (graphics, input, etc.)
 pygame.init()
-#initialise pygame's mixer for playing sound/music
+
+# initialise pygame's mixer for playing sound/music
 pygame.mixer.init()
 
 #--------------------------------
 # window, assets and image setup
 #--------------------------------
-#create game window of width 1000 height 500
-screen = pygame.display.set_mode((1000, 500))
+#create game window of width height 
+screen = pygame.display.set_mode((1020, 780))
 #set the title of the window
 pygame.display.set_caption("NPC Chat Demo")
 
 
 #load intro background image
 intro_background = pygame.image.load("pygame_demo/assets/intro-no-word.png")
-intro_background = pygame.transform.scale(intro_background, (1000, 500))
+intro_background = pygame.transform.scale(intro_background, (1020, 780))
 
-#load world background image
-house_background = pygame.image.load("pygame_demo/assets/house_background.jpg")
-house_background = pygame.transform.scale(house_background, (1000, 500))
+
+#load intro background image
+intro_background = pygame.image.load("pygame_demo/assets/intro-no-word.png")
+intro_background = pygame.transform.scale(intro_background, (1020, 780))
+
+#load house background image
+house_background = pygame.image.load("pygame_demo/assets/house.png")
+house_background = pygame.transform.scale(house_background, (1020, 780))
 #load chat background image
-chat_background = pygame.image.load("pygame_demo/assets/interior.jpg")
-chat_background = pygame.transform.scale(chat_background, (1000, 500))
+chat_background = pygame.image.load("pygame_demo/assets/interior.png")
+chat_background = pygame.transform.scale(chat_background, (1020, 780))
+#load forest background image
+forest_background = pygame.image.load("pygame_demo/assets/forest.png")
+forest_background = pygame.transform.scale(forest_background, (1020, 780))
+# load gnome interaction background
+forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
+forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 
-#
-chat_panel = pygame.Rect(0, 0, 700, 130) #create a rectangle manually
-chat_panel.centerx = screen.get_width() // 2 #center horizontally
-chat_panel.bottom = screen.get_height() - 20 #place near bottom
-#
-name_panel = pygame.Rect(0, 0, chat_panel.width, 40)
-name_panel.centerx = screen.get_width() // 2
-name_panel.top = 20 #place at top of the screen
+# load chat panel artwork (no scaling)
+chat_panel = pygame.image.load("pygame_demo/assets/chat_panel.png").convert_alpha()
+chat_panel_rect = chat_panel.get_rect()
+chat_panel_rect.centerx = screen.get_width() // 2
+chat_panel_rect.bottom = screen.get_height() - 20
+
+name_panel = pygame.image.load("pygame_demo/assets/name_panel.png").convert_alpha()
+name_panel_rect = name_panel.get_rect()
+name_panel_rect.centerx = screen.get_width() // 2
+name_panel_rect.top = 20
 
 #load npc sprite
-npc_image = pygame.image.load("pygame_demo/assets/red.png")
-npc_world = pygame.transform.scale(npc_image, (120, 120))
-npc_chat = pygame.transform.scale(npc_image, (400, 400))
+red_image = pygame.image.load("pygame_demo/assets/red.png")
+red_house_image = pygame.transform.scale(red_image, (120, 120))
+red_chat_image = pygame.transform.scale(red_image, (400, 400))
 #
-world_npc_rect = npc_world.get_rect() #create a rectangle from the loaded npc image
-world_npc_rect.centerx = screen.get_width() // 2 #center horizontally
-world_npc_rect.x = 650
-world_npc_rect.y = 170
+red_rect = red_house_image.get_rect() #create a rectangle from the loaded npc image
+red_rect.centerx = screen.get_width() // 2 #center horizontally
+red_rect.x = 550
+red_rect.y = 130
 #
-chat_npc_rect = npc_chat.get_rect()
-chat_npc_rect.centerx = screen.get_width() // 2
-chat_npc_rect.bottom = chat_panel.y + 100
+red_chat_rect = red_chat_image.get_rect()
+red_chat_rect.centerx = screen.get_width() // 2
+red_chat_rect.bottom = chat_panel_rect.y + 100
+red_chat_rect.bottom = chat_panel_rect.y + 100
 
 #player sprite
 player = pygame.image.load("pygame_demo/assets/wolf.png")
 player = pygame.transform.scale(player, (120, 120))
 player_rect = player.get_rect()
-player_rect.x = 50
-player_rect.y = 260
+player_rect.x = 270
+player_rect.y = 340
 player_speed = 3
+
+# load gnome
+gnome_npc = pygame.image.load("pygame_demo/assets/gnome.png")
+gnome_npc = pygame.transform.scale(gnome_npc, (200, 200))
+gnome_rect = gnome_npc.get_rect()
+gnome_rect.x = 550
+gnome_rect.y = 200
+
+gnome_chat = pygame.transform.scale(gnome_npc, (400, 400))
+gnome_chat_rect = gnome_chat.get_rect()
+gnome_chat_rect.centerx = screen.get_width() // 2
+gnome_chat_rect.bottom = chat_panel_rect.y + 100
+gnome_chat_rect.bottom = chat_panel_rect.y + 100
+
 
 #load background music, set volume, and play in loop
 # pygame.mixer.music.load("pygame_demo/assets/music.mp3")
@@ -72,21 +112,49 @@ player_speed = 3
 black = (0, 0, 0)
 white = (255, 255, 255)
 #default font for displaying text
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font(None, 32)
 # Font path for the pixaleted text
 # FONT_FILE = "PressStart2P-Regular.ttf"
 #clock for controlling frame rate (i.e. how fast the game loop runs)
+
 clock = pygame.time.Clock()
+
+#-------------------------
+# AI client setup
+#-------------------------
+red_ai = AIClient()
+gnome_ai = AIClient()
+
+#-------------------------
+# chat manager setup
+#-------------------------
+red_chat_assets = {
+    'chat_bg': chat_background,
+    'chat_panel': chat_panel,
+    'chat_panel_rect': chat_panel_rect,
+    'name_panel': name_panel,
+    'name_panel_rect': name_panel_rect,
+    'npc_chat': red_chat_image,
+    'chat_npc_rect': red_chat_rect
+}
+
+gnome_chat_assets = {
+    'chat_bg': forest_chat,
+    'chat_panel': chat_panel,
+    'chat_panel_rect': chat_panel_rect,
+    'name_panel': name_panel,
+    'name_panel_rect': name_panel_rect,
+    'npc_chat': gnome_chat,
+    'chat_npc_rect': gnome_chat_rect
+}
+
+red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, red_chat_assets, npc_name = "Little Red Riding Hood")
+gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gnome_chat_assets, npc_name = "Gnome")
 
 #------------
 # game state
 #------------
 game_state = "intro"
-frozen = False #freeze input after player responds once
-#messages to display in chat panel (starting with the default npc greeting)
-messages = ["NPC: Hello! What's your name?"]
-#player's current typed input
-player_input = ""
 
 #------------
 # functions
@@ -109,55 +177,55 @@ def handle_player_movement(keys):
     player_rect.y = max(0, min(player_rect.y, screen.get_height() - player_rect.height))
 
 def check_npc_interaction(keys):
-    global game_state, player_input, frozen, messages
-    if player_rect.colliderect(world_npc_rect):
+    global game_state
+    if player_rect.colliderect(gnome_rect) and game_state == "forest":
+        if keys[pygame.K_e]:
+            game_state = "minigame"
+            gnome_chat_manager.enter_chat()
+    elif player_rect.colliderect(red_rect) and game_state == "house":
         if keys[pygame.K_e]:
             game_state = "chat"
-            #reset game state variables
-            player_input = ""
-            frozen = False
-            messages = ["NPC: Hello! What's your name?"]
+            red_chat_manager.enter_chat()
+    
 
-
-def draw_world():
+def draw_house():
     screen.blit(house_background, (0,0))
-    screen.blit(npc_world, world_npc_rect)
+    screen.blit(red_house_image, red_rect)
     screen.blit(player, player_rect)
 
-    if player_rect.colliderect(world_npc_rect):
+    # interacting with little red riding hood
+    if player_rect.colliderect(red_rect):
         popup = font.render("Press E to talk", True, white)
-        popup_rect = popup.get_rect(center=(world_npc_rect.centerx, world_npc_rect.top-20))
+        popup_rect = popup.get_rect(center=(red_rect.centerx, red_rect.top-20))
         screen.blit(popup, popup_rect)
 
-def draw_chat():
-    screen.blit(chat_background, (0,0))
-    #draw the npc sprite
-    screen.blit(npc_chat, chat_npc_rect)
+def draw_forest():
+    screen.blit(forest_background, (0,0))
+    screen.blit(gnome_npc, gnome_rect)
+    screen.blit(player, player_rect)
 
-    #draw chat panel for showing messages
-    pygame.draw.rect(screen, black, chat_panel)
+    # interacting with gnome
+    if player_rect.colliderect(gnome_rect):
+        popup = font.render("Press E to talk", True, white)
+        popup_rect = popup.get_rect(center=(gnome_rect.centerx, gnome_rect.top-20))
+        screen.blit(popup, popup_rect)
 
-    #draw npc's name panel
-    pygame.draw.rect(screen, black, name_panel)
-    npc_name = "Little Red Riding Hood"
-    name_surface = font.render(npc_name, True, white)
-    name_rect = name_surface.get_rect(center=name_panel.center)
-    screen.blit(name_surface, name_rect)
+def draw_intro():
+    # draw intro screen with title
+    screen.blit(intro_background, (0, 0))  # background first
+    
+    #title = get_pixelated_font(40).render("Welcome to the world of\nLittle Red Riding Hood!", True, (211, 100, 17))
+    #title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2 - 100))
 
-    #draw all messages in the chat panel
-    y = chat_panel.y + 10
-    for msg in messages:
-        text_surface = font.render(msg, True, white)
-        screen.blit(text_surface, (chat_panel.x + 10, y))
-        y += 30 #move down for next line
+    #add bounce timing
+    bounce_offset = math.sin(pygame.time.get_ticks() * 0.005) * 8
 
-    #draw player input text dynamically
-    if frozen:
-        input_surface = font.render("", True, white)
-    else:
-        input_surface = font.render("> " + player_input, True, white)
-    screen.blit(input_surface, (chat_panel.x + 10, y))
-
+    # draw instructions below title
+    instructions = font.render("Press ENTER to start.", False, black)
+    instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50 + bounce_offset))
+    
+    #screen.blit(title, title_rect)
+    screen.blit(instructions, instructions_rect)
 
 #----------------
 # main game loop
@@ -180,34 +248,23 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "world"
+                game_state = "forest"
             
-            # ESC to exit chat
-            if game_state == "chat" and event.key == pygame.K_ESCAPE:
-                game_state = "world"
-
-            if game_state == "chat" and not frozen: #only allow typing if not frozen
-                #deleting last character
-                if event.key == pygame.K_BACKSPACE:
-                    player_input = player_input[:-1]
-                #entering input
-                elif event.key == pygame.K_RETURN:
-                    messages.append("> " + player_input) #adds player's message to chat history
-                    #simple npc response
-                    npc_response = "NPC: Nice to meet you " + player_input
-                    messages.append(npc_response) #adds npc's message to chat history
-                    frozen = True #now that player has responded, we want to stop the game
-                    player_input = "" #clear input field
-
-                else:
-                    #add typed character to current input
-                    player_input += event.unicode
+            # handle chat events if in chat state
+            if game_state == "chat":
+                game_state = red_chat_manager.handle_event(event)
+            
+            if game_state == "minigame":
+                game_state = gnome_chat_manager.handle_event(event)
 
     #--------------
-    # world update
+    # house update
     #--------------
-    if game_state == "world":
-        frozen = False
+    if game_state == "house":
+        handle_player_movement(keys)
+        check_npc_interaction(keys)
+    
+    if game_state == "forest":
         handle_player_movement(keys)
         check_npc_interaction(keys)
 
@@ -215,28 +272,16 @@ while running:
     # draw
     #------
     if game_state == "intro":
-
-        # draw intro screen with title
-        screen.blit(intro_background, (0, 0))  # background first
-        
-        #title = get_pixelated_font(40).render("Welcome to the world of\nLittle Red Riding Hood!", True, (211, 100, 17))
-        #title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2 - 100))
-
-        #add bounce timing
-        bounce_offset = math.sin(pygame.time.get_ticks() * 0.005) * 8
-
-        # draw instructions below title
-        instructions = font.render("Press ENTER to start.", False, black)
-        instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 80 + bounce_offset))
-        
-       #screen.blit(title, title_rect)
-        screen.blit(instructions, instructions_rect)
-
-        
-    if game_state == "world":
-        draw_world()
-    if game_state == "chat":
-        draw_chat()
+        draw_intro()
+    if game_state == "house":
+        draw_house()
+    elif game_state == "chat":
+        red_chat_manager.draw()
+    elif game_state == "forest":
+        draw_forest()
+    elif game_state == "minigame":
+        gnome_chat_manager.draw()
+    
 
     #----------------------------------------
     # update the display and control fps
