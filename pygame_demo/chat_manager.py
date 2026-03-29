@@ -145,7 +145,7 @@ class ChatManager:
         return clean, status
 
     def draw(self):
-        # Draw basic panels
+        # Draw chat UI
         self.screen.blit(self.chat_background, (0,0))
         self.screen.blit(self.npc_chat, self.chat_npc_rect)
         self.screen.blit(self.chat_panel, self.chat_panel_rect)
@@ -161,7 +161,9 @@ class ChatManager:
         line_height = self.font.get_linesize() + 2
         max_width = self.chat_panel_rect.width - (padding_x * 2)
         
+        # Calculate positions
         npc_y = self.chat_panel_rect.y + padding_y
+        # FIXED POSITION: Anchored to the bottom of the chat panel
         input_y = self.chat_panel_rect.bottom - padding_y - line_height
 
         # --- NPC / THINKING SLOT ---
@@ -176,9 +178,11 @@ class ChatManager:
                 latest = npc_msgs[-1].replace("NPC: ", "")
                 curr_y = npc_y
                 for line in self.wrap_text(latest, self.font, max_width):
-                    txt = self.font.render(line, True, (255, 255, 255))
-                    self.screen.blit(txt, (self.chat_panel_rect.x + padding_x, curr_y))
-                    curr_y += line_height
+                    # Only draw if the text hasn't reached the fixed input slot
+                    if curr_y < input_y - 10:
+                        txt = self.font.render(line, True, (255, 255, 255))
+                        self.screen.blit(txt, (self.chat_panel_rect.x + padding_x, curr_y))
+                        curr_y += line_height
 
         # --- PLAYER INPUT SLOT ---
         # Disappears while AI is thinking
