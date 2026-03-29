@@ -86,7 +86,12 @@ class ChatManager:
                 elif event.unicode and event.unicode.isprintable():
                     # add typed character to current input
                     self.player_input += event.unicode
-        return "chat"
+        if self.npc_name == "Little Red Riding Hood":
+                return "chat"
+        elif self.npc_name == "Gnome":
+                return "minigame"
+        else:
+            raise ValueError("Unknown NPC name in ChatManager")
     
 #------------
 # NOTE: THESE FUNCTIONS WILL APPLY DIFFERENTLY FOR THE MINI GAME
