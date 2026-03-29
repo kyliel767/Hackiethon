@@ -16,10 +16,6 @@ from ai_services import AIClient, RED_SYSTEM_PROMPT, GNOME_SYSTEM_PROMPT
 load_dotenv()
 
 # initialise all pygame modules (graphics, input, etc.)
-from dotenv import load_dotenv
-from groq import Groq
-
-# initialise all pygame modules (graphics, input, etc.)
 pygame.init()
 
 # initialise pygame's mixer for playing sound/music
