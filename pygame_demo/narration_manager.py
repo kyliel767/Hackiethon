@@ -3,7 +3,9 @@ import pygame
 # -------
 # Narration text
 # -------
-HOUSE_NARRATION = """Congratulations! You've successfully navigated the forest and reached the cottage. The deed is done. Grandmother was... delicious. With your 'lunch' safely tucked away and her nightgown snugly fitted, the stage is set. You look surprisingly convincing in pink! Now, steel yourself... Your grandaughter is right there. Don't let your stomach growl!"""
+HOUSE_NARRATION = """Congratulations! You've successfully navigated the forest and reached the cottage. 
+The deed is done. Grandmother was... delicious. With your 'lunch' safely tucked away and her nightgown snugly fitted, the stage is set. 
+You look surprisingly convincing in pink! Now, steel yourself... Your grandaughter is right there. Don't let your stomach growl!"""
 
 FOREST_NARRATION = """
 
