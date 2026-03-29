@@ -4,9 +4,11 @@
 import os
 import pygame
 import sys
+import math
 from dotenv import load_dotenv
 from groq import Groq
 from typewriting import draw_animated_text
+from extract_sprite_sheets import load_spritesheet
 
  # import chat manager class
 from chat_manager import ChatManager
@@ -29,6 +31,11 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((1020, 780))
 #set the title of the window
 pygame.display.set_caption("NPC Chat Demo")
+
+
+#load intro background image
+intro_background = pygame.image.load("pygame_demo/assets/intro-no-word.png")
+intro_background = pygame.transform.scale(intro_background, (1020, 780))
 
 #load house background image
 house_background = pygame.image.load("pygame_demo/assets/house.png")
@@ -161,7 +168,6 @@ game_state = "intro"
 #------------
 # functions
 #------------
-
 def handle_player_movement(keys):
     if keys[pygame.K_LEFT]:
         player_rect.x -= player_speed
@@ -211,18 +217,24 @@ def draw_forest():
         screen.blit(popup, popup_rect)
 
 def draw_intro():
-     # draw intro screen with title
-    screen.fill(black)
-    title = font.render("Welcome to the house of Little Red Riding Hood!", True, white)
-    title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
-        
+    # draw intro screen with title
+    screen.blit(intro_background, (0, 0))  # background first
+    
+    #title = get_pixelated_font(40).render("Welcome to the world of\nLittle Red Riding Hood!", True, (211, 100, 17))
+    #title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2 - 100))
+
+    #add bounce timing
+    bounce_offset = math.sin(pygame.time.get_ticks() * 0.005) * 8
+
     # draw instructions below title
-    instructions = font.render("Press ENTER to start.", True, white)
-    instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
-    screen.blit(title, title_rect)
+    instructions = font.render("Press ENTER to start.", False, black)
+    instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50 + bounce_offset))
+    
+    #screen.blit(title, title_rect)
     screen.blit(instructions, instructions_rect)
 
-def draw_ending():
+
+def draw_bad_ending():
     global current_frame, animation_timer
 
     animation_timer += clock.tick(60)
@@ -242,10 +254,14 @@ def draw_ending():
         next_frame.set_alpha(alpha)
         screen.blit(next_frame, (0, 0))
 
-        
-
     if current_frame == len(walk_frames) - 1:
         draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 90), screen.get_width()//2, screen.get_height()//2 - 120, white, 110, 0.05, 0.3)
+
+def draw_good_ending():
+
+    screen.blit(house_background, (0, 0))
+
+    load_spritesheet("pygame_demo/assets/portal_sheet.png", 1020, 780, 8)
 
 #----------------
 # main game loop
@@ -292,7 +308,7 @@ while running:
     # draw
     #------
     if game_state == "intro":
-        draw_intro()
+        draw_good_ending()
     if game_state == "house":
         draw_house()
     elif game_state == "chat":
@@ -302,7 +318,7 @@ while running:
     elif game_state == "minigame":
         gnome_chat_manager.draw()
     elif game_state == "ending":
-        draw_ending()
+        draw_bad_ending()
     
 
     #----------------------------------------
