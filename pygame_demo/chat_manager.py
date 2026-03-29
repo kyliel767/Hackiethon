@@ -127,8 +127,8 @@ class ChatManager:
         self.screen.blit(name_surface, name_rect)
 
         # draw all messages in the chat panel (wrapped)
-        padding_x = 20
-        padding_y = 18
+        padding_x = 28
+        padding_y = 24
         y = self.chat_panel_rect.y + padding_y
         max_width = self.chat_panel_rect.width - (padding_x * 2)
         line_height = self.font.get_linesize() + 2
