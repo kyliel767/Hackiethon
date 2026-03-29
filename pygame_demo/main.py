@@ -138,6 +138,10 @@ red_chat_assets = {
     'chat_npc_rect': chat_npc_rect
 }
 
+"""
+NOTE: GNOME CHAT ASSETS TO BE ADDED, THESE ARE JUST PLACEHOLDERS
+"""
+
 gnome_chat_assets = {
     'chat_bg': forest_chat,
     'chat_panel': chat_panel,
