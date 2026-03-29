@@ -203,11 +203,33 @@ def draw_intro():
     title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
         
     # draw instructions below title
-    draw_animated_text(screen, ["Hello!", "Welcome to the forest.", "Be careful..."], font, screen.get_width()//2, 150, white)
     instructions = font.render("Press ENTER to start.", True, white)
     instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
     screen.blit(title, title_rect)
     screen.blit(instructions, instructions_rect)
+
+def draw_ending():
+    walk_frames = []
+
+    # load each frame to a walk_frames
+    for i in range(1, 7):
+        frame = pygame.image.load(f"assets/end{i}.png")
+        frame = pygame.transform.scale(frame, (1020, 780))
+        walk_frames.append(frame)
+
+    # animation variables
+    current_frame = 0
+    animation_timer = 0
+    animation_speed = 150  # milliseconds per frame
+
+    # loop through each frame once
+    animation_timer += clock.tick(60)
+    if animation_timer >= animation_speed:
+        if current_frame < len(walk_frames) - 1:  
+            current_frame += 1
+        animation_timer = 0
+
+    screen.blit(walk_frames[current_frame], (x, y))
 
 #----------------
 # main game loop
