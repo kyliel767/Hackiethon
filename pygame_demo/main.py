@@ -14,6 +14,8 @@ from extract_sprite_sheets import load_spritesheet
 from chat_manager import ChatManager
 # import AI client and system prompt
 from ai_services import AIClient, RED_SYSTEM_PROMPT, GNOME_SYSTEM_PROMPT
+# import narration manager
+from narration_manager import NarrationManager, HOUSE_NARRATION, FOREST_NARRATION
 
 # load environment variables for API key
 load_dotenv()
@@ -82,8 +84,8 @@ red_chat_image = pygame.transform.scale(red_image, (400, 400))
 #
 red_rect = red_house_image.get_rect() #create a rectangle from the loaded npc image
 red_rect.centerx = screen.get_width() // 2 #center horizontally
-red_rect.x = 550
-red_rect.y = 130
+red_rect.x = 140
+red_rect.y = 390
 #
 red_chat_rect = red_chat_image.get_rect()
 red_chat_rect.centerx = screen.get_width() // 2
@@ -92,18 +94,18 @@ red_chat_rect.bottom = chat_panel_rect.y + 100
 
 #player sprite
 player = pygame.image.load("pygame_demo/assets/wolf.png")
-player = pygame.transform.scale(player, (120, 120))
+player = pygame.transform.scale(player, (150, 150))
 player_rect = player.get_rect()
-player_rect.x = 270
-player_rect.y = 340
-player_speed = 3
+player_rect.x = 200
+player_rect.y = 450
+player_speed = 4
 
 # load gnome
 gnome_npc = pygame.image.load("pygame_demo/assets/gnome.png")
 gnome_npc = pygame.transform.scale(gnome_npc, (200, 200))
 gnome_rect = gnome_npc.get_rect()
-gnome_rect.x = 550
-gnome_rect.y = 200
+gnome_rect.x = 700
+gnome_rect.y = 400
 
 gnome_chat = pygame.transform.scale(gnome_npc, (400, 400))
 gnome_chat_rect = gnome_chat.get_rect()
@@ -111,6 +113,13 @@ gnome_chat_rect.centerx = screen.get_width() // 2
 gnome_chat_rect.bottom = chat_panel_rect.y + 100
 gnome_chat_rect.bottom = chat_panel_rect.y + 100
 
+# load wolf as grandma
+wolf_grandma = pygame.image.load("pygame_demo/assets/grandma.png")
+wolf_grandma = pygame.transform.scale(wolf_grandma, (100, 150))
+wolf_grandma_rect = wolf_grandma.get_rect()
+wolf_grandma_rect.x = 550
+wolf_grandma_rect.y = 500
+wolf_grandma_speed = 4
 
 #load background music, set volume, and play in loop
 # pygame.mixer.music.load("pygame_demo/assets/music.mp3")
@@ -124,6 +133,7 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 32)
+narration_font = pygame.font.Font(filename="pygame_demo/PressStart2P-Regular.ttf", size=22)
 # Font path for the pixaleted text
 FONT_FILE = "PressStart2P-Regular.ttf"
 #clock for controlling frame rate (i.e. how fast the game loop runs)
@@ -163,6 +173,13 @@ red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, red_chat
 gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gnome_chat_assets, npc_name = "Gnome")
 
 #-------------------------
+# narration manager setup
+#-------------------------
+# load and scale the narration panel specifically for center display
+narration_panel_img = pygame.image.load("pygame_demo/assets/narration_panel.png").convert_alpha()
+narrator = NarrationManager(screen, narration_font, narration_panel_img)
+
+#-------------------------
 # define variables for ending 
 #-------------------------
 # animation variables for ending 
@@ -185,6 +202,7 @@ good_fade_surface.fill(black)
 state1 = make_text_state()
 state2 = make_text_state()
 state3 = make_text_state()
+state4 = make_text_state()
 
 
 #------------
@@ -195,27 +213,30 @@ game_state = "intro"
 #------------
 # functions
 #------------
-def handle_player_movement(keys):
+#def get_pixelated_font(size):
+    #return pygame.font.Font(FONT_FILE, size)
+
+def handle_player_movement(keys, player):
     if keys[pygame.K_LEFT]:
-        player_rect.x -= player_speed
+        player.x -= player_speed
     if keys[pygame.K_RIGHT]:
-        player_rect.x += player_speed
+        player.x += player_speed
     if keys[pygame.K_UP]:
-        player_rect.y -= player_speed
+        player.y -= player_speed
     if keys[pygame.K_DOWN]:
-        player_rect.y += player_speed
+        player.y += player_speed
     
     #keep player inside screen
-    player_rect.x = max(0, min(player_rect.x, screen.get_width() - player_rect.width))
-    player_rect.y = max(0, min(player_rect.y, screen.get_height() - player_rect.height))
+    player.x = max(0, min(player.x, screen.get_width() - player.width))
+    player.y = max(0, min(player.y, screen.get_height() - player.height))
 
-def check_npc_interaction(keys):
+def check_npc_interaction(keys, player):
     global game_state
-    if player_rect.colliderect(gnome_rect) and game_state == "forest":
+    if player.colliderect(gnome_rect) and game_state == "forest":
         if keys[pygame.K_e]:
             game_state = "minigame"
             gnome_chat_manager.enter_chat()
-    elif player_rect.colliderect(red_rect) and game_state == "house":
+    elif wolf_grandma_rect.colliderect(red_rect) and game_state == "house":
         if keys[pygame.K_e]:
             game_state = "chat"
             red_chat_manager.enter_chat()
@@ -224,10 +245,10 @@ def check_npc_interaction(keys):
 def draw_house():
     screen.blit(house_background, (0,0))
     screen.blit(red_house_image, red_rect)
-    screen.blit(player, player_rect)
+    screen.blit(wolf_grandma, wolf_grandma_rect)
 
     # interacting with little red riding hood
-    if player_rect.colliderect(red_rect):
+    if wolf_grandma_rect.colliderect(red_rect):
         popup = font.render("Press E to talk", True, white)
         popup_rect = popup.get_rect(center=(red_rect.centerx, red_rect.top-20))
         screen.blit(popup, popup_rect)
@@ -282,7 +303,7 @@ def draw_bad_ending():
         screen.blit(next_frame, (0, 0))
 
     if current_frame == len(walk_frames) - 1:
-        draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 90), screen.get_width()//2, screen.get_height()//2 - 120, white, 110, 0.05, 0.3)
+        draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 90), screen.get_width()//2, screen.get_height()//2 - 120, white, 120, line_delay=0.06, state=state4)
 
 def draw_good_ending():
 
@@ -342,39 +363,85 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "forest"
+                game_state = "forest_narration"
+                narrator.start_narration(FOREST_NARRATION)
             
             # handle chat events if in chat state
-            if game_state == "chat":
+            elif game_state == "chat":
                 game_state = red_chat_manager.handle_event(event)
             
-            if game_state == "minigame":
+            elif game_state == "minigame":
                 game_state = gnome_chat_manager.handle_event(event)
+            
+            # handle narration events
+            elif game_state == "house_narration":
+                if event.key == pygame.K_RETURN:
+                    if narrator.is_finished():
+                        game_state = "house" # unlock player movement
+                    else:
+                        # finish the typewriter effect instantly
+                        narrator.char_index = len(narrator.full_text)
+            elif game_state == "forest_narration":
+                if event.key == pygame.K_RETURN:
+                    if narrator.is_finished():
+                        game_state = "forest" # unlock player movement
+                    else:
+                        # finish the typewriter effect instantly
+                        narrator.char_index = len(narrator.full_text)
 
     #--------------
-    # house update
+    # state update
     #--------------
     if game_state == "house":
-        handle_player_movement(keys)
-        check_npc_interaction(keys)
+        handle_player_movement(keys, wolf_grandma_rect)
+        check_npc_interaction(keys, wolf_grandma_rect)
     
     if game_state == "forest":
-        handle_player_movement(keys)
-        check_npc_interaction(keys)
+        handle_player_movement(keys, player_rect)
+        check_npc_interaction(keys, player_rect)
 
+    # logic for narration (no movement allowed)
+    if game_state == "house_narration" or game_state == "forest_narration":
+        narrator.update()
     #------
     # draw
     #------
     if game_state == "intro":
-        draw_good_ending()
+        draw_intro()
+        
+    if game_state == "house" or game_state == "house_narration":
+        draw_house() # always draw the room in the background
+        if game_state == "house_narration":
+            narrator.draw() # draw panel on top of room
     if game_state == "house":
         draw_house()
     elif game_state == "chat":
         red_chat_manager.draw()
-    elif game_state == "forest":
+    elif game_state == "forest" or game_state == "forest_narration":
         draw_forest()
+        if game_state == "forest_narration":
+            narrator.draw()
     elif game_state == "minigame":
         gnome_chat_manager.draw()
+
+
+    # ----
+    # status update
+    # ----
+    if game_state == "chat":
+        game_state = red_chat_manager.check_status("chat")
+    
+    if game_state == "minigame":
+        new_state = gnome_chat_manager.check_status("minigame")
+        # only trigger the narration if the state is actually changing right now
+        if new_state == "house_narration":
+            game_state = "house_narration"
+            narrator.start_narration(HOUSE_NARRATION)
+        else:
+            game_state = new_state
+
+    if game_state == "win":
+        draw_good_ending()
     elif game_state == "ending":
         draw_bad_ending()
     
