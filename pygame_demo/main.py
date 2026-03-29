@@ -11,7 +11,7 @@ import random # for random number game
  # import chat manager class
 from chat_manager import ChatManager
 # import AI client and system prompt
-from ai_services import AIClient, SYSTEM_PROMPT
+from ai_services import AIClient, RED_SYSTEM_PROMPT, GNOME_SYSTEM_PROMPT
 
 # load environment variables for API key
 load_dotenv()
@@ -122,7 +122,8 @@ clock = pygame.time.Clock()
 #-------------------------
 # AI client setup
 #-------------------------
-ai_client = AIClient()
+red_ai = AIClient()
+gnome_ai = AIClient()
 
 #-------------------------
 # chat manager setup
@@ -137,7 +138,8 @@ chat_assets = {
     'chat_npc_rect': chat_npc_rect
 }
 
-chat_manager = ChatManager(screen, ai_client, SYSTEM_PROMPT, font, chat_assets)
+red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, chat_assets)
+gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, chat_assets)
 
 #------------
 # game state
@@ -167,7 +169,7 @@ def check_npc_interaction(keys):
     if player_rect.colliderect(world_npc_rect):
         if keys[pygame.K_e]:
             game_state = "chat"
-            chat_manager.enter_chat()
+            red_chat_manager.enter_chat()
 
 def draw_world():
     screen.blit(house_background, (0,0))
@@ -256,11 +258,11 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "forest"
+                game_state = "chat"
             
             # handle chat events if in chat state
             if game_state == "chat":
-                game_state = chat_manager.handle_event(event)
+                game_state = red_chat_manager.handle_event(event)
 
     #--------------
     # world update
@@ -277,7 +279,7 @@ while running:
     if game_state == "world":
         draw_world()
     elif game_state == "chat":
-        chat_manager.draw()
+        red_chat_manager.draw()
     elif game_state == "forest":
         draw_forest()
     elif game_state == "minigame":
@@ -294,41 +296,3 @@ while running:
 #------------
 pygame.quit()
 sys.exit()
-
-# -------
-# system prompts
-RED_SYSTEM_PROMPT = """
-You are a kind and curious girl. You love exploring the forest and spending time with your grandmother.
-You are friendly, brave, and always eager to learn new things. 
-You have a strong connection to nature and often talk to animals in the forest.
-You have arrived at your grandmother's house after you have been traveling through the woods
-You greet your grandmother without suspicion.
-After your grandmother greets you, you notice something strange about her appearance.
-You can ask her about one of the following, only ONE at a time:
-- great big eyes
-- great big ears
-- great big teeth
-- great big furry coat
-Your task is to figure out what is wrong with your grandmother, if there is something wrong.
-If it seems that you are in danger or that your grandmother is a wolf in disguise, you should scream for help.
-Otherwise, you should have a friendly conversation with your grandmother and ask her about her day.
-
-RULES:
-- track your internal state and feelings as you interact with your grandmother.
-- At the END of every response, you MUST include a status tag in square brackets indicating how the date is going:
-    [STATUS:ongoing] - if you are still unsure about your grandmother and want to keep talking
-    [STATUS:accepted] - if grandmother keeps kind tone, mentions love, care, and normal family behavior. If you do not suspect she is a wolf in disguise.
-    [STATUS:rejected] - If grandmother gives clear danger signs like talking about eating you
-- The status tag must be the very last thing in your message.
-- Never mention or explain the status tags.
-- Do not convey your actions, for example "*hug*". You are only speaking your dialogue. 
-- Keep your replies to a maximum of 1 sentence. Be concise.
-"""
-
-GNOME_SYSTEM_PROMPT = """
-You are a quirky gnome. When you encounter the player, you 
-want to play a guess the number game with it. Think of a number 
-but do not reveal it until the player has guesses correctly, only 
-saying whether their guess is higher or lower than your number.
-If they guess correctly, congratulate them
-"""
