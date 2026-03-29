@@ -4,6 +4,7 @@
 import pygame
 import sys
 import math
+from typewriting import AnimatedText
 
 #initialise all pygame modules (graphics, input, etc.)
 pygame.init()
@@ -228,6 +229,8 @@ while running:
         # draw instructions below title
         instructions = font.render("Press ENTER to start.", False, black)
         instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 80 + bounce_offset))
+        
+        text1 = AnimatedText("Hello traveller!", mode="typewriter", char_speed=0.05)
         
        #screen.blit(title, title_rect)
         screen.blit(instructions, instructions_rect)
