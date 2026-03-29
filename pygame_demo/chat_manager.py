@@ -93,11 +93,18 @@ class ChatManager:
         else:
             raise ValueError("Unknown NPC name in ChatManager")
     
-#------------
-# NOTE: THESE FUNCTIONS WILL APPLY DIFFERENTLY FOR THE MINI GAME
-#------------
+
+# for little red riding hood
     def extract_status_from_response(self, text):
         for status in ["accepted", "rejected", "ongoing"]:
+            tag = f"[STATUS:{status}]"
+            if tag in text:
+                return text.replace(tag, "").strip(), status
+        return text.strip(), "ongoing"
+    
+# for the gnome 
+    def extract_number_from_response(self, text):
+        for status in ["higher", "lower", "accepted"]:
             tag = f"[STATUS:{status}]"
             if tag in text:
                 return text.replace(tag, "").strip(), status
@@ -108,7 +115,12 @@ class ChatManager:
         self.conversation_history.append({"role": "user", "content": player_text})
         ai_response = self.ai_client.send_messages(self.conversation_history)
         self.conversation_history.append({"role": "assistant", "content": ai_response})
-        clean, status = self.extract_status_from_response(ai_response)
+        if self.npc_name == "Little Red Riding Hood":
+            clean, status = self.extract_status_from_response(ai_response)
+        elif self.npc_name == "Gnome":
+            clean, status = self.extract_number_from_response(ai_response)
+        else:
+            ValueError("Error with npc")
         self.waiting_for_ai = False
         return clean, status
 
