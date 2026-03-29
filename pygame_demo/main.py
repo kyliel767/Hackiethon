@@ -442,7 +442,7 @@ while running:
 
     if game_state == "win":
         draw_good_ending()
-    elif game_state == "ending":
+    elif game_state == "game_over":
         draw_bad_ending()
     
 
