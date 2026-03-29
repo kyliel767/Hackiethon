@@ -262,6 +262,9 @@ while running:
         red_chat_manager.draw()
     elif game_state == "forest":
         draw_forest()
+    elif game_state == "minigame":
+        gnome_chat_manager.draw()
+    
 
     #----------------------------------------
     # update the display and control fps
