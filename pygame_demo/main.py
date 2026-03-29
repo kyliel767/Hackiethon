@@ -33,7 +33,7 @@ screen = pygame.display.set_mode((1020, 780))
 #set the title of the window
 pygame.display.set_caption("NPC Chat Demo")
 
-#load world background image
+#load house background image
 house_background = pygame.image.load("pygame_demo/assets/house.png")
 house_background = pygame.transform.scale(house_background, (1020, 780))
 #load chat background image
@@ -58,19 +58,19 @@ name_panel_rect.centerx = screen.get_width() // 2
 name_panel_rect.top = 20
 
 #load npc sprite
-npc_image = pygame.image.load("pygame_demo/assets/red.png")
-npc_world = pygame.transform.scale(npc_image, (120, 120))
-npc_chat = pygame.transform.scale(npc_image, (400, 400))
+red_image = pygame.image.load("pygame_demo/assets/red.png")
+red_house_image = pygame.transform.scale(red_image, (120, 120))
+red_chat_image = pygame.transform.scale(red_image, (400, 400))
 #
-world_npc_rect = npc_world.get_rect() #create a rectangle from the loaded npc image
-world_npc_rect.centerx = screen.get_width() // 2 #center horizontally
-world_npc_rect.x = 550
-world_npc_rect.y = 130
+red_rect = red_house_image.get_rect() #create a rectangle from the loaded npc image
+red_rect.centerx = screen.get_width() // 2 #center horizontally
+red_rect.x = 550
+red_rect.y = 130
 #
-chat_npc_rect = npc_chat.get_rect()
-chat_npc_rect.centerx = screen.get_width() // 2
-chat_npc_rect.bottom = chat_panel_rect.y + 100
-chat_npc_rect.bottom = chat_panel_rect.y + 100
+red_chat_rect = red_chat_image.get_rect()
+red_chat_rect.centerx = screen.get_width() // 2
+red_chat_rect.bottom = chat_panel_rect.y + 100
+red_chat_rect.bottom = chat_panel_rect.y + 100
 
 #player sprite
 player = pygame.image.load("pygame_demo/assets/wolf.png")
@@ -125,8 +125,8 @@ red_chat_assets = {
     'chat_panel_rect': chat_panel_rect,
     'name_panel': name_panel,
     'name_panel_rect': name_panel_rect,
-    'npc_chat': npc_chat,
-    'chat_npc_rect': chat_npc_rect
+    'npc_chat': red_chat_image,
+    'chat_npc_rect': red_chat_rect
 }
 
 gnome_chat_assets = {
@@ -171,20 +171,21 @@ def check_npc_interaction(keys):
         if keys[pygame.K_e]:
             game_state = "minigame"
             gnome_chat_manager.enter_chat()
-    elif player_rect.colliderect(world_npc_rect):
+    elif player_rect.colliderect(red_rect):
         if keys[pygame.K_e]:
             game_state = "chat"
             red_chat_manager.enter_chat()
     
 
-def draw_world():
+def draw_house():
     screen.blit(house_background, (0,0))
-    screen.blit(npc_world, world_npc_rect)
+    screen.blit(red_house_image, red_rect)
     screen.blit(player, player_rect)
 
-    if player_rect.colliderect(world_npc_rect):
+    # interacting with little red riding hood
+    if player_rect.colliderect(red_rect):
         popup = font.render("Press E to talk", True, white)
-        popup_rect = popup.get_rect(center=(world_npc_rect.centerx, world_npc_rect.top-20))
+        popup_rect = popup.get_rect(center=(red_rect.centerx, red_rect.top-20))
         screen.blit(popup, popup_rect)
 
 def draw_forest():
@@ -201,7 +202,7 @@ def draw_forest():
 def draw_intro():
      # draw intro screen with title
     screen.fill(black)
-    title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
+    title = font.render("Welcome to the house of Little Red Riding Hood!", True, white)
     title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
         
     # draw instructions below title
@@ -241,9 +242,9 @@ while running:
                 game_state = gnome_chat_manager.handle_event(event)
 
     #--------------
-    # world update
+    # house update
     #--------------
-    if game_state == "world":
+    if game_state == "house":
         handle_player_movement(keys)
         check_npc_interaction(keys)
     
@@ -256,8 +257,8 @@ while running:
     #------
     if game_state == "intro":
         draw_intro()
-    if game_state == "world":
-        draw_world()
+    if game_state == "house":
+        draw_house()
     elif game_state == "chat":
         red_chat_manager.draw()
     elif game_state == "forest":

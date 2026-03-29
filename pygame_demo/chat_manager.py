@@ -64,12 +64,12 @@ class ChatManager:
         thread.start()
     
 
-    # handles player input and returns next game state (either stays in chat or goes back to world)
+    # handles player input and returns next game state (either stays in chat or goes back to house)
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             # ESC to exit chat
             if event.key == pygame.K_ESCAPE:
-                return "world"
+                return "house"
 
             if not self.waiting_for_ai:
                 # deleting last character
