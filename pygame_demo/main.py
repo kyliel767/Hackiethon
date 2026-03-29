@@ -308,11 +308,12 @@ def draw_good_ending():
 
     # fade to black
     if good_fading:
-        good_fade_alpha += 3  # fade speed
+        good_fade_alpha += 5 # fade speed
         good_fade_surface.set_alpha(good_fade_alpha)
         screen.blit(good_fade_surface, (0, 0))
 
-        if good_fade_alpha >= 255:  # fully black
+        # once fully fanded go to the final ending screen
+        if good_fade_alpha >= 255:  
             screen.blit(earth_background, (0,0))
             draw_animated_text(screen, ["CONGRATULATIONS"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 50) , screen.get_width()//2, screen.get_height()//2 - 250, white, state=state1)
             if state1["done"]:
