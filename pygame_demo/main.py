@@ -6,7 +6,6 @@ import pygame
 import sys
 from dotenv import load_dotenv
 from groq import Groq
-import random # for random number game
 
  # import chat manager class
 from chat_manager import ChatManager
@@ -40,9 +39,12 @@ house_background = pygame.transform.scale(house_background, (1020, 780))
 #load chat background image
 chat_background = pygame.image.load("pygame_demo/assets/interior.png")
 chat_background = pygame.transform.scale(chat_background, (1020, 780))
-#load task 1 background image
+#load forest background image
 forest_background = pygame.image.load("pygame_demo/assets/forest.png")
 forest_background = pygame.transform.scale(forest_background, (1020, 780))
+# load gnome interaction background
+forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
+forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 
 # load chat panel artwork (no scaling)
 chat_panel = pygame.image.load("pygame_demo/assets/chat_panel.png").convert_alpha()
@@ -91,10 +93,6 @@ gnome_chat_rect.centerx = screen.get_width() // 2
 gnome_chat_rect.bottom = chat_panel_rect.y + 100
 gnome_chat_rect.bottom = chat_panel_rect.y + 100
 
-# load gnome interaction background
-forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
-forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
-
 
 #load background music, set volume, and play in loop
 # pygame.mixer.music.load("pygame_demo/assets/music.mp3")
@@ -109,13 +107,6 @@ white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 32)
 #clock for controlling frame rate (i.e. how fast the game loop runs)
-
-#--------------------------------
-# for minigame
-#--------------------------------
-number = random.randint(1, 100)
-player_text = ""
-feedback_text = ""
 
 clock = pygame.time.Clock()
 
@@ -137,10 +128,6 @@ red_chat_assets = {
     'npc_chat': npc_chat,
     'chat_npc_rect': chat_npc_rect
 }
-
-"""
-NOTE: GNOME CHAT ASSETS TO BE ADDED, THESE ARE JUST PLACEHOLDERS
-"""
 
 gnome_chat_assets = {
     'chat_bg': forest_chat,
@@ -180,10 +167,15 @@ def handle_player_movement(keys):
 
 def check_npc_interaction(keys):
     global game_state
-    if player_rect.colliderect(world_npc_rect):
+    if player_rect.colliderect(gnome_rect):
+        if keys[pygame.K_e]:
+            game_state = "minigame"
+            gnome_chat_manager.enter_chat()
+    elif player_rect.colliderect(world_npc_rect):
         if keys[pygame.K_e]:
             game_state = "chat"
             red_chat_manager.enter_chat()
+    
 
 def draw_world():
     screen.blit(house_background, (0,0))
@@ -196,48 +188,15 @@ def draw_world():
         screen.blit(popup, popup_rect)
 
 def draw_forest():
-    global game_state
     screen.blit(forest_background, (0,0))
     screen.blit(gnome_npc, gnome_rect)
     screen.blit(player, player_rect)
-    handle_player_movement(keys)
 
     # interacting with gnome
     if player_rect.colliderect(gnome_rect):
         popup = font.render("Press E to talk", True, white)
         popup_rect = popup.get_rect(center=(gnome_rect.centerx, gnome_rect.top-20))
         screen.blit(popup, popup_rect)
-
-        if keys[pygame.K_e]:
-            game_state = "minigame"
-
-# talking to gnome
-def draw_minigame():
-    global game_state
-    screen.blit(forest_chat, (0,0))
-    screen.blit(gnome_chat, gnome_chat_rect)
-    gnome = font.render('You want to cross this forest? If you guess the ' \
-    'number in my mind, I\'ll let you pass', True, black)
-    screen.blit(gnome, (10, 10))
-    handle_text_input(event)
-
-
-# input from player
-def handle_text_input(event):
-    global player_text
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_BACKSPACE:
-            player_text = player_text[:-1]
-        elif event.key == pygame.K_RETURN:
-            submit_guess(player_text)
-            player_text = ""
-        else:
-            player_text += event.unicode
-
-# whether player guessed number
-def submit_guess(text):
-    test = font.render("text", True, black)
-    screen.blit(test, (40, 40))
 
 def draw_intro():
      # draw intro screen with title
@@ -277,11 +236,18 @@ while running:
             # handle chat events if in chat state
             if game_state == "chat":
                 game_state = red_chat_manager.handle_event(event)
+            
+            if game_state == "minigame":
+                game_state = gnome_chat_manager.handle_event(event)
 
     #--------------
     # world update
     #--------------
     if game_state == "world":
+        handle_player_movement(keys)
+        check_npc_interaction(keys)
+    
+    if game_state == "forest":
         handle_player_movement(keys)
         check_npc_interaction(keys)
 
@@ -296,8 +262,6 @@ while running:
         red_chat_manager.draw()
     elif game_state == "forest":
         draw_forest()
-    elif game_state == "minigame":
-        draw_minigame()
 
     #----------------------------------------
     # update the display and control fps
