@@ -70,18 +70,18 @@ red_chat_rect.bottom = chat_panel_rect.y + 100
 
 #player sprite
 player = pygame.image.load("pygame_demo/assets/wolf.png")
-player = pygame.transform.scale(player, (120, 120))
+player = pygame.transform.scale(player, (150, 150))
 player_rect = player.get_rect()
-player_rect.x = 270
-player_rect.y = 340
-player_speed = 3
+player_rect.x = 200
+player_rect.y = 450
+player_speed = 4
 
 # load gnome
 gnome_npc = pygame.image.load("pygame_demo/assets/gnome.png")
 gnome_npc = pygame.transform.scale(gnome_npc, (200, 200))
 gnome_rect = gnome_npc.get_rect()
-gnome_rect.x = 550
-gnome_rect.y = 200
+gnome_rect.x = 700
+gnome_rect.y = 400
 
 gnome_chat = pygame.transform.scale(gnome_npc, (400, 400))
 gnome_chat_rect = gnome_chat.get_rect()
@@ -261,7 +261,16 @@ while running:
         draw_forest()
     elif game_state == "minigame":
         gnome_chat_manager.draw()
+
+
+    # ----
+    # status update
+    # ----
+    if game_state == "chat":
+        game_state = red_chat_manager.check_status("chat")
     
+    if game_state == "minigame":
+        game_state = gnome_chat_manager.check_status("minigame")
 
     #----------------------------------------
     # update the display and control fps
