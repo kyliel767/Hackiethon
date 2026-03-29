@@ -45,8 +45,8 @@ forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 
 #load failure ending frames into a list
 walk_frames = []
-for i in range(1, 7):
-    frame = pygame.image.load(f"assets/end{i}.png")
+for i in range(1, 10):
+    frame = pygame.image.load(f"pygame_demo/assets/end{i}.png")
     frame = pygame.transform.scale(frame, (1020, 780))
     walk_frames.append(frame)
 
@@ -146,6 +146,11 @@ gnome_chat_assets = {
 red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, red_chat_assets, npc_name = "Little Red Riding Hood")
 gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gnome_chat_assets, npc_name = "Gnome")
 
+# animation variables for ending 
+current_frame = 0
+animation_timer = 0
+animation_speed = 150  # milliseconds per frame
+
 #------------
 # game state
 #------------
@@ -216,22 +221,27 @@ def draw_intro():
     screen.blit(instructions, instructions_rect)
 
 def draw_ending():
-    
-    # animation variables
-    current_frame = 0
-    animation_timer = 0
-    animation_speed = 150  # milliseconds per frame
+    global current_frame, animation_timer
 
-    # loop through each frame once
     animation_timer += clock.tick(60)
+
     if animation_timer >= animation_speed:
-        if current_frame < len(walk_frames) - 1:  
+        if current_frame < len(walk_frames) - 1:
             current_frame += 1
         animation_timer = 0
 
-    screen.blit(walk_frames[current_frame], (x, y))
+    # draw current frame
+    screen.blit(walk_frames[current_frame], (0, 0))
 
-    draw_animated_text(screen, ["YOU", "FAIL!"], font, screen.get_width()//2, screen.get_height()//2, white)
+    # blend next frame on top with increasing opacity
+    if current_frame < len(walk_frames) - 1:
+        next_frame = walk_frames[current_frame + 1].copy()
+        alpha = int((animation_timer / animation_speed) * 255)
+        next_frame.set_alpha(alpha)
+        screen.blit(next_frame, (0, 0))
+
+    if current_frame == len(walk_frames) - 1:
+        draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font(None, 150), screen.get_width()//2, screen.get_height()//2 - 150, white, 100, 0.05, 0.3)
 
 #----------------
 # main game loop
