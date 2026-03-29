@@ -11,7 +11,6 @@ class ChatManager:
         self.system_prompt = system_prompt
         self.font = font
         self.npc_name = npc_name
-        self.status = None
         
         # assets
         self.chat_background = assets['chat_bg']
@@ -60,11 +59,6 @@ class ChatManager:
         def worker():
             clean, status = self.ask_npc(user_text)
             self.messages.append("NPC: " + clean)
-            self.status = status
-            # ----------- FOR DEBUGGYING PURPOSES -----------
-            print(f"Extracted status for {self.npc_name}: {status}")
-            # -----------------------------------------------
-            self.status = status
 
         thread = threading.Thread(target=worker, daemon=True)
         thread.start()
@@ -130,7 +124,6 @@ class ChatManager:
     
 # for the gnome 
     def extract_number_from_response(self, text):
-        print(f"*********** Extracting text from Gnome response: {text} ***********")
         for status in ["higher", "lower", "accepted"]:
             tag = f"[STATUS:{status}]"
             if tag in text:
@@ -146,7 +139,6 @@ class ChatManager:
             clean, status = self.extract_status_from_response(ai_response)
         elif self.npc_name == "Gnome":
             clean, status = self.extract_number_from_response(ai_response)
-            self.status = status
         else:
             ValueError("Error with npc")
         self.waiting_for_ai = False
@@ -197,16 +189,3 @@ class ChatManager:
         if not self.waiting_for_ai:
             input_surface = self.font.render("> " + self.player_input, True, (255, 255, 255))
             self.screen.blit(input_surface, (self.chat_panel_rect.x + padding_x, input_y))
-        
-    def check_status(self, current_state):
-        print(f"Checking status for {self.npc_name}: {self.status}")
-        if self.npc_name == "Little Red Riding Hood":
-            if self.status == "accepted":
-                return "win"
-            if self.status == "rejected":
-                return "game_over"
-        elif self.npc_name == "Gnome":
-            if self.status == "accepted":
-                return "house"
-                
-        return current_state

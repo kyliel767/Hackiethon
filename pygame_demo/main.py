@@ -258,7 +258,7 @@ while running:
                 game_state = gnome_chat_manager.handle_event(event)
 
     #--------------
-    # state update
+    # house update
     #--------------
     if game_state == "house":
         handle_player_movement(keys)
@@ -267,12 +267,6 @@ while running:
     if game_state == "forest":
         handle_player_movement(keys)
         check_npc_interaction(keys)
-    
-    if game_state == "chat":
-        game_state = red_chat_manager.check_status("chat")
-        
-    if game_state == "minigame":
-        game_state = gnome_chat_manager.check_status("minigame")
 
     #------
     # draw
