@@ -167,11 +167,11 @@ def handle_player_movement(keys):
 
 def check_npc_interaction(keys):
     global game_state
-    if player_rect.colliderect(gnome_rect):
+    if player_rect.colliderect(gnome_rect) and game_state == "forest":
         if keys[pygame.K_e]:
             game_state = "minigame"
             gnome_chat_manager.enter_chat()
-    elif player_rect.colliderect(red_rect):
+    elif player_rect.colliderect(red_rect) and game_state == "house":
         if keys[pygame.K_e]:
             game_state = "chat"
             red_chat_manager.enter_chat()

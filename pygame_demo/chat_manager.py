@@ -69,7 +69,10 @@ class ChatManager:
         if event.type == pygame.KEYDOWN:
             # ESC to exit chat
             if event.key == pygame.K_ESCAPE:
-                return "house"
+                if self.npc_name == "Little Red Riding Hood":
+                    return "house"
+                elif self.npc_name == "Gnome":
+                    return "forest"
 
             if not self.waiting_for_ai:
                 # deleting last character
