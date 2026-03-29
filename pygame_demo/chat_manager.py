@@ -75,21 +75,41 @@ class ChatManager:
                     return "forest"
 
             if not self.waiting_for_ai:
-                # deleting last character
+                # 1. Backspace is always allowed
                 if event.key == pygame.K_BACKSPACE:
                     self.player_input = self.player_input[:-1]
-                # entering input
+
+                # 2. Enter sends ONLY the allowed text to the AI
                 elif event.key == pygame.K_RETURN and self.player_input.strip():
-                    self.messages.append("> " + self.player_input.strip()) # adds player's message to chat history
-                    self.start_npc_response(self.player_input.strip())
-                    self.player_input = "" # clear input field
+                    # We pass the cleaned, visible input to the AI
+                    message_to_send = self.player_input.strip()
+                    
+                    # Log the player's message to the history list
+                    self.messages.append("> " + message_to_send)
+                    
+                    # Start AI call and wipe the input field instantly
+                    self.start_npc_response(message_to_send)
+                    self.player_input = "" 
+
+                # 3. Text Input Gatekeeper
                 elif event.unicode and event.unicode.isprintable():
-                    # add typed character to current input
-                    self.player_input += event.unicode
+                    # Define boundaries
+                    padding_x = 28
+                    max_width = self.chat_panel_rect.width - (padding_x * 2)
+                    
+                    # PRE-CHECK: What would the line look like if we added this key?
+                    test_string = "> " + self.player_input + event.unicode
+                    text_width, _ = self.font.size(test_string)
+
+                    # Only add the character to the actual variable if it fits
+                    if text_width <= max_width:
+                        self.player_input += event.unicode
+                    # Else: Do nothing. The character is discarded and never stored.
+        # Maintain state
         if self.npc_name == "Little Red Riding Hood":
-                return "chat"
+            return "chat"
         elif self.npc_name == "Gnome":
-                return "minigame"
+            return "minigame"
         else:
             raise ValueError("Unknown NPC name in ChatManager")
     
@@ -125,37 +145,47 @@ class ChatManager:
         return clean, status
 
     def draw(self):
+        # Draw chat UI
         self.screen.blit(self.chat_background, (0,0))
-        # draw the npc sprite
         self.screen.blit(self.npc_chat, self.chat_npc_rect)
-        # draw chat panel for showing messages
         self.screen.blit(self.chat_panel, self.chat_panel_rect)
-        # draw npc's name panel
         self.screen.blit(self.name_panel, self.name_panel_rect)
 
-        # draw 
+        # Draw NPC Name
         name_surface = self.font.render(self.npc_name, True, (255, 255, 255))
         name_rect = name_surface.get_rect(center=self.name_panel_rect.center)
         self.screen.blit(name_surface, name_rect)
 
-        # draw all messages in the chat panel (wrapped)
-        padding_x = 20
-        padding_y = 18
-        y = self.chat_panel_rect.y + padding_y
-        max_width = self.chat_panel_rect.width - (padding_x * 2)
+        # Layout math
+        padding_x, padding_y = 28, 24
         line_height = self.font.get_linesize() + 2
+        max_width = self.chat_panel_rect.width - (padding_x * 2)
+        
+        # Calculate positions
+        npc_y = self.chat_panel_rect.y + padding_y
+        # FIXED POSITION: Anchored to the bottom of the chat panel
+        input_y = self.chat_panel_rect.bottom - padding_y - line_height
 
-        for msg in self.messages:
-            for line in self.wrap_text(msg, self.font, max_width):
-                text_surface = self.font.render(line, True, (255, 255, 255))
-                self.screen.blit(text_surface, (self.chat_panel_rect.x + padding_x, y))
-                y += line_height
-                if y > self.chat_panel_rect.bottom - padding_y - 10:
-                    break
-
-        # draw player input text dynamically
+        # --- NPC / THINKING SLOT ---
         if self.waiting_for_ai:
-            input_surface = self.font.render("Thinking...", True, (255, 255, 255))
+            # Replaces previous NPC text with "Thinking..."
+            thinking_surface = self.font.render("Thinking...", True, (180, 180, 180))
+            self.screen.blit(thinking_surface, (self.chat_panel_rect.x + padding_x, npc_y))
         else:
+            # Only show the latest NPC message
+            npc_msgs = [m for m in self.messages if m.startswith("NPC:")]
+            if npc_msgs:
+                latest = npc_msgs[-1].replace("NPC: ", "")
+                curr_y = npc_y
+                for line in self.wrap_text(latest, self.font, max_width):
+                    # Only draw if the text hasn't reached the fixed input slot
+                    if curr_y < input_y - 10:
+                        txt = self.font.render(line, True, (255, 255, 255))
+                        self.screen.blit(txt, (self.chat_panel_rect.x + padding_x, curr_y))
+                        curr_y += line_height
+
+        # --- PLAYER INPUT SLOT ---
+        # Disappears while AI is thinking
+        if not self.waiting_for_ai:
             input_surface = self.font.render("> " + self.player_input, True, (255, 255, 255))
-        self.screen.blit(input_surface, (self.chat_panel_rect.x + padding_x, y))
+            self.screen.blit(input_surface, (self.chat_panel_rect.x + padding_x, input_y))
