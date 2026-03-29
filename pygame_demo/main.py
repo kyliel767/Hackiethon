@@ -7,7 +7,7 @@ import sys
 import math
 from dotenv import load_dotenv
 from groq import Groq
-from typewriting import draw_animated_text
+from typewriting import draw_animated_text, make_text_state
 from extract_sprite_sheets import load_spritesheet
 
  # import chat manager class
@@ -49,6 +49,9 @@ forest_background = pygame.transform.scale(forest_background, (1020, 780))
 # load gnome interaction background
 forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
 forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
+# load good ending background
+earth_background = pygame.image.load("pygame_demo/assets/earth.png")
+earth_background = pygame.transform.scale(earth_background, (1020, 780))
 
 #load failure ending frames into a list
 walk_frames = []
@@ -56,6 +59,10 @@ for i in range(1, 10):
     frame = pygame.image.load(f"pygame_demo/assets/end{i}.png")
     frame = pygame.transform.scale(frame, (1020, 780))
     walk_frames.append(frame)
+
+#load portal animation
+portal_frames = load_spritesheet("pygame_demo/assets/portal_sheet.png", num_frames=8, scale=(200, 200))
+
 
 # load chat panel artwork (no scaling)
 chat_panel = pygame.image.load("pygame_demo/assets/chat_panel.png").convert_alpha()
@@ -155,10 +162,30 @@ gnome_chat_assets = {
 red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, red_chat_assets, npc_name = "Little Red Riding Hood")
 gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gnome_chat_assets, npc_name = "Gnome")
 
+#-------------------------
+# define variables for ending 
+#-------------------------
 # animation variables for ending 
 current_frame = 0
 animation_timer = 0
 animation_speed = 150  # milliseconds per frame
+
+# sprite sheet variables for ending
+portal_frame = 0
+portal_timer = 0
+portal_speed = 100
+
+# good ending transition variable 
+good_ending_timer = 0
+good_ending_delay = 2000  # 3 seconds of portal before fading
+good_fade_alpha = 0
+good_fading = False
+good_fade_surface = pygame.Surface((1020, 780))
+good_fade_surface.fill(black)
+state1 = make_text_state()
+state2 = make_text_state()
+state3 = make_text_state()
+
 
 #------------
 # game state
@@ -259,9 +286,39 @@ def draw_bad_ending():
 
 def draw_good_ending():
 
+    global portal_frame, portal_timer, good_ending_timer, good_fading, good_fade_alpha
+
     screen.blit(house_background, (0, 0))
 
-    load_spritesheet("pygame_demo/assets/portal_sheet.png", 8)
+    
+
+    # update animation
+    portal_timer += clock.tick(60)
+    if portal_timer >= portal_speed:
+        portal_frame = (portal_frame + 1) % len(portal_frames)
+        portal_timer = 0
+
+    # draw the current frame
+    screen.blit(portal_frames[portal_frame], (screen.get_width()//2 - 10, screen.get_height()//2 - 50))
+    screen.blit(player, (screen.get_width()//2 - 50 , screen.get_height()//2))
+    # count time then start fading
+    good_ending_timer += portal_timer
+    if good_ending_timer >= good_ending_delay:
+        good_fading = True
+
+    # fade to black
+    if good_fading:
+        good_fade_alpha += 3  # fade speed
+        good_fade_surface.set_alpha(good_fade_alpha)
+        screen.blit(good_fade_surface, (0, 0))
+
+        if good_fade_alpha >= 255:  # fully black
+            screen.blit(earth_background, (0,0))
+            draw_animated_text(screen, ["CONGRATULATIONS"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 50) , screen.get_width()//2, screen.get_height()//2 - 250, white, state=state1)
+            if state1["done"]:
+                draw_animated_text(screen, ["YOU WIN!"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 90) , screen.get_width()//2, screen.get_height()//2 - 120, white, state=state2)
+            if state2["done"]:
+                draw_animated_text(screen, ["Welcome back to Earth"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 20) , screen.get_width()//2, screen.get_height()//2 + 30, white, state=state3)
 
 #----------------
 # main game loop

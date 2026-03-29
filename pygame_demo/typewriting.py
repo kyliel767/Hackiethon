@@ -1,14 +1,17 @@
 import time
 
-text_state = {
-    "current_line": 0,
-    "displayed_chars": 0,
-    "last_update": time.time(),
-    "done": False
-}
+def make_text_state():
+    return {
+        "current_line": 0,
+        "displayed_chars": 0,
+        "last_update": time.time(),
+        "done": False
+    }
 
-def draw_animated_text(surface, lines, font, x, y, color=(255, 255, 255), line_spacing=40, char_speed=0.05, line_delay=0.8):
-    state = text_state
+
+def draw_animated_text(surface, lines, font, x, y, color=(255, 255, 255), line_spacing=40, char_speed=0.05, line_delay=0.8, state=None):
+    if state is None:
+        state = make_text_state()
 
     # update
     if not state["done"]:
@@ -38,4 +41,3 @@ def draw_animated_text(surface, lines, font, x, y, color=(255, 255, 255), line_s
         text_surface = font.render(current, False, color)
         text_rect = text_surface.get_rect(centerx=x, y=y + state["current_line"] * line_spacing)
         surface.blit(text_surface, text_rect)
-        
