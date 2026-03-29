@@ -71,8 +71,8 @@ red_chat_image = pygame.transform.scale(red_image, (400, 400))
 #
 red_rect = red_house_image.get_rect() #create a rectangle from the loaded npc image
 red_rect.centerx = screen.get_width() // 2 #center horizontally
-red_rect.x = 550
-red_rect.y = 130
+red_rect.x = 140
+red_rect.y = 390
 #
 red_chat_rect = red_chat_image.get_rect()
 red_chat_rect.centerx = screen.get_width() // 2
@@ -100,6 +100,13 @@ gnome_chat_rect.centerx = screen.get_width() // 2
 gnome_chat_rect.bottom = chat_panel_rect.y + 100
 gnome_chat_rect.bottom = chat_panel_rect.y + 100
 
+# load wolf as grandma
+wolf_grandma = pygame.image.load("pygame_demo/assets/grandma.png")
+wolf_grandma = pygame.transform.scale(wolf_grandma, (100, 150))
+wolf_grandma_rect = wolf_grandma.get_rect()
+wolf_grandma_rect.x = 550
+wolf_grandma_rect.y = 500
+wolf_grandma_speed = 4
 
 #load background music, set volume, and play in loop
 # pygame.mixer.music.load("pygame_demo/assets/music.mp3")
@@ -162,27 +169,27 @@ game_state = "intro"
 #def get_pixelated_font(size):
     #return pygame.font.Font(FONT_FILE, size)
 
-def handle_player_movement(keys):
+def handle_player_movement(keys, player):
     if keys[pygame.K_LEFT]:
-        player_rect.x -= player_speed
+        player.x -= player_speed
     if keys[pygame.K_RIGHT]:
-        player_rect.x += player_speed
+        player.x += player_speed
     if keys[pygame.K_UP]:
-        player_rect.y -= player_speed
+        player.y -= player_speed
     if keys[pygame.K_DOWN]:
-        player_rect.y += player_speed
+        player.y += player_speed
     
     #keep player inside screen
-    player_rect.x = max(0, min(player_rect.x, screen.get_width() - player_rect.width))
-    player_rect.y = max(0, min(player_rect.y, screen.get_height() - player_rect.height))
+    player.x = max(0, min(player.x, screen.get_width() - player.width))
+    player.y = max(0, min(player.y, screen.get_height() - player.height))
 
-def check_npc_interaction(keys):
+def check_npc_interaction(keys, player):
     global game_state
-    if player_rect.colliderect(gnome_rect) and game_state == "forest":
+    if player.colliderect(gnome_rect) and game_state == "forest":
         if keys[pygame.K_e]:
             game_state = "minigame"
             gnome_chat_manager.enter_chat()
-    elif player_rect.colliderect(red_rect) and game_state == "house":
+    elif wolf_grandma_rect.colliderect(red_rect) and game_state == "house":
         if keys[pygame.K_e]:
             game_state = "chat"
             red_chat_manager.enter_chat()
@@ -191,10 +198,10 @@ def check_npc_interaction(keys):
 def draw_house():
     screen.blit(house_background, (0,0))
     screen.blit(red_house_image, red_rect)
-    screen.blit(player, player_rect)
+    screen.blit(wolf_grandma, wolf_grandma_rect)
 
     # interacting with little red riding hood
-    if player_rect.colliderect(red_rect):
+    if wolf_grandma_rect.colliderect(red_rect):
         popup = font.render("Press E to talk", True, white)
         popup_rect = popup.get_rect(center=(red_rect.centerx, red_rect.top-20))
         screen.blit(popup, popup_rect)
@@ -261,12 +268,12 @@ while running:
     # house update
     #--------------
     if game_state == "house":
-        handle_player_movement(keys)
-        check_npc_interaction(keys)
+        handle_player_movement(keys, wolf_grandma_rect)
+        check_npc_interaction(keys, wolf_grandma_rect)
     
     if game_state == "forest":
-        handle_player_movement(keys)
-        check_npc_interaction(keys)
+        handle_player_movement(keys, player_rect)
+        check_npc_interaction(keys, player_rect)
 
     #------
     # draw
@@ -291,6 +298,9 @@ while running:
     
     if game_state == "minigame":
         game_state = gnome_chat_manager.check_status("minigame")
+
+    #if game_state == "win":
+        # draw win screen
 
     #----------------------------------------
     # update the display and control fps
