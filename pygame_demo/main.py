@@ -18,8 +18,9 @@ screen = pygame.display.set_mode((1000, 500))
 #set the title of the window
 pygame.display.set_caption("NPC Chat Demo")
 
+
 #load intro background image
-intro_background = pygame.image.load("pygame_demo/assets/intro-no-word.png")
+intro_background = pygame.image.load("pygame_demo/assets/intro_background.png")
 intro_background = pygame.transform.scale(intro_background, (1000, 500))
 
 #load world background image
@@ -72,6 +73,8 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 36)
+# Font path for the pixaleted text
+FONT_FILE = "PressStart2P-Regular.ttf"
 #clock for controlling frame rate (i.e. how fast the game loop runs)
 clock = pygame.time.Clock()
 
@@ -88,6 +91,8 @@ player_input = ""
 #------------
 # functions
 #------------
+def get_pixelated_font(size):
+    return pygame.font.Font(FONT_FILE, size)
 
 def handle_player_movement(keys):
     if keys[pygame.K_LEFT]:
@@ -214,13 +219,17 @@ while running:
         # draw intro screen with title
         screen.blit(intro_background, (0, 0))  # background first
         
+        title = get_pixelated_font(40).render("Welcome to the world of\nLittle Red Riding Hood!", True, (211, 100, 17))
+        title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2 - 100))
+
         #add bounce timing
         bounce_offset = math.sin(pygame.time.get_ticks() * 0.005) * 8
 
         # draw instructions below title
-        instructions = font.render("Press ENTER to start.", True, black)
+        instructions = font.render("Press ENTER to start.", False, black)
         instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50 + bounce_offset))
         
+        screen.blit(title, title_rect)
         screen.blit(instructions, instructions_rect)
 
 
