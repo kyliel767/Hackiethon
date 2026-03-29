@@ -115,6 +115,7 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 32)
+narration_font = pygame.font.Font(filename="pygame_demo/assets/PressStart2P-Regular.ttf", size=22)
 # Font path for the pixaleted text
 # FONT_FILE = "PressStart2P-Regular.ttf"
 #clock for controlling frame rate (i.e. how fast the game loop runs)
@@ -158,7 +159,7 @@ gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gn
 #-------------------------
 # load and scale the narration panel specifically for center display
 narration_panel_img = pygame.image.load("pygame_demo/assets/narration_panel.png").convert_alpha()
-narrator = NarrationManager(screen, font, narration_panel_img)
+narrator = NarrationManager(screen, narration_font, narration_panel_img)
 
 #------------
 # game state
@@ -298,7 +299,6 @@ while running:
     if game_state == "house" or game_state == "house_narration":
         draw_house() # always draw the room in the background
         if game_state == "house_narration":
-            print("Drawing narrator with text:", narrator.full_text) # debug statement to check narration text
             narrator.draw() # draw panel on top of room
     elif game_state == "chat":
         red_chat_manager.draw()
