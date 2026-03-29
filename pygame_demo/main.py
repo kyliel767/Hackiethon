@@ -110,6 +110,8 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 32)
+# Font path for the pixaleted text
+FONT_FILE = "PressStart2P-Regular.ttf"
 #clock for controlling frame rate (i.e. how fast the game loop runs)
 
 clock = pygame.time.Clock()
@@ -240,8 +242,10 @@ def draw_ending():
         next_frame.set_alpha(alpha)
         screen.blit(next_frame, (0, 0))
 
+        
+
     if current_frame == len(walk_frames) - 1:
-        draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font(None, 150), screen.get_width()//2, screen.get_height()//2 - 150, white, 100, 0.05, 0.3)
+        draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 90), screen.get_width()//2, screen.get_height()//2 - 120, white, 110, 0.05, 0.3)
 
 #----------------
 # main game loop
@@ -288,7 +292,7 @@ while running:
     # draw
     #------
     if game_state == "intro":
-        draw_ending()
+        draw_intro()
     if game_state == "house":
         draw_house()
     elif game_state == "chat":
