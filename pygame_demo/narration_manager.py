@@ -7,7 +7,7 @@ HOUSE_NARRATION = """Congratulations! You've successfully navigated the forest a
 The deed is done. Grandmother was... delicious. With your 'lunch' safely tucked away and her nightgown snugly fitted, the stage is set. 
 You look surprisingly convincing in pink! Now, steel yourself... Your granddaughter and ticket to freedom is right there. Don't let your stomach growl!"""
 
-FOREST_NARRATION = """Wow! I didn’t expect to have another person here so soon... I’m guessing you want to return to your world right and not be a wolf forever right? All you have to do is change the ending of Little Red Riding Hood so that the wolf wins in the end. If you don’t change the ending... well, that’s for you to find out... Your first task is to cross the forest so that you reach Grandma’s house."""
+FOREST_NARRATION = """Wow! I didn’t expect to have another person here so soon... You woke up from that truck collision quicker than the others... I’m guessing you want to return to your world and not be a wolf forever, right? All you have to do is change the ending of Little Red Riding Hood so that the wolf wins in the end. If you don’t change the ending... well, that’s for you to find out... Your first task is to cross the forest so that you reach Grandma’s house."""
 
 
 
