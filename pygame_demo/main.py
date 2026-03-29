@@ -261,7 +261,7 @@ def draw_good_ending():
 
     screen.blit(house_background, (0, 0))
 
-    load_spritesheet("pygame_demo/assets/portal_sheet.png", 1020, 780, 8)
+    load_spritesheet("pygame_demo/assets/portal_sheet.png", 8)
 
 #----------------
 # main game loop
