@@ -6,6 +6,7 @@ import pygame
 import sys
 from dotenv import load_dotenv
 from groq import Groq
+from typewriting import draw_animated_text
 
  # import chat manager class
 from chat_manager import ChatManager
@@ -202,6 +203,7 @@ def draw_intro():
     title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
         
     # draw instructions below title
+    draw_animated_text(screen, ["Hello!", "Welcome to the forest.", "Be careful..."], font, screen.get_width()//2, 150, white)
     instructions = font.render("Press ENTER to start.", True, white)
     instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
     screen.blit(title, title_rect)
