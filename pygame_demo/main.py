@@ -12,6 +12,8 @@ from groq import Groq
 from chat_manager import ChatManager
 # import AI client and system prompt
 from ai_services import AIClient, RED_SYSTEM_PROMPT, GNOME_SYSTEM_PROMPT
+# import narration manager
+from narration_manager import NarrationManager, HOUSE_NARRATION
 
 # load environment variables for API key
 load_dotenv()
@@ -151,6 +153,13 @@ gnome_chat_assets = {
 red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, red_chat_assets, npc_name = "Little Red Riding Hood")
 gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gnome_chat_assets, npc_name = "Gnome")
 
+#-------------------------
+# narration manager setup
+#-------------------------
+# load and scale the narration panel specifically for center display
+narration_panel_img = pygame.image.load("pygame_demo/assets/narration_panel.png").convert_alpha()
+narrator = NarrationManager(screen, font, narration_panel_img)
+
 #------------
 # game state
 #------------
@@ -256,13 +265,26 @@ while running:
             
             if game_state == "minigame":
                 game_state = gnome_chat_manager.handle_event(event)
+            
+            # handle narration events
+            if game_state == "house_narration":
+                if event.key == pygame.K_RETURN:
+                    if narrator.is_finished():
+                        game_state = "house" # unlock player movement
+                    else:
+                        # finish the typewriter effect instantly
+                        narrator.char_index = len(narrator.full_text)
 
     #--------------
-    # house update
+    # state update
     #--------------
     if game_state == "house":
         handle_player_movement(keys)
         check_npc_interaction(keys)
+    
+    # logic for house narration (no movement allowed)
+    if game_state == "house_narration":
+        narrator.update()
     
     if game_state == "forest":
         handle_player_movement(keys)
@@ -273,8 +295,11 @@ while running:
     #------
     if game_state == "intro":
         draw_intro()
-    if game_state == "house":
-        draw_house()
+    if game_state == "house" or game_state == "house_narration":
+        draw_house() # always draw the room in the background
+        if game_state == "house_narration":
+            print("Drawing narrator with text:", narrator.full_text) # debug statement to check narration text
+            narrator.draw() # draw panel on top of room
     elif game_state == "chat":
         red_chat_manager.draw()
     elif game_state == "forest":
@@ -290,7 +315,13 @@ while running:
         game_state = red_chat_manager.check_status("chat")
     
     if game_state == "minigame":
-        game_state = gnome_chat_manager.check_status("minigame")
+        new_state = gnome_chat_manager.check_status("minigame")
+        # only trigger the narration if the state is actually changing right now
+        if new_state == "house_narration":
+            game_state = "house_narration"
+            narrator.start_narration(HOUSE_NARRATION)
+        else:
+            game_state = new_state
 
     #----------------------------------------
     # update the display and control fps
