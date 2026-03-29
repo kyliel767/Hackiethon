@@ -138,8 +138,8 @@ chat_assets = {
     'chat_npc_rect': chat_npc_rect
 }
 
-red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, chat_assets)
-gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, chat_assets)
+red_chat_manager = ChatManager(screen, red_ai, RED_SYSTEM_PROMPT, font, chat_assets, npc_name = "Little Red Riding Hood")
+gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, chat_assets, npc_name = "Gnome")
 
 #------------
 # game state
@@ -258,7 +258,7 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "chat"
+                game_state = "forest"
             
             # handle chat events if in chat state
             if game_state == "chat":

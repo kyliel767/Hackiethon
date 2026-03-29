@@ -5,11 +5,12 @@ import threading
 # chat manager
 #------------
 class ChatManager:
-    def __init__(self, screen, ai_client, system_prompt, font, assets):
+    def __init__(self, screen, ai_client, system_prompt, font, assets, npc_name):
         self.screen = screen
         self.ai_client = ai_client
         self.system_prompt = system_prompt
         self.font = font
+        self.npc_name = npc_name
         
         # assets
         self.chat_background = assets['chat_bg']
@@ -53,22 +54,6 @@ class ChatManager:
             lines.append(current)
         return lines
 
-    def extract_status_from_response(self, text):
-        for status in ["accepted", "rejected", "ongoing"]:
-            tag = f"[STATUS:{status}]"
-            if tag in text:
-                return text.replace(tag, "").strip(), status
-        return text.strip(), "ongoing"
-
-    def ask_npc(self, player_text):
-        self.waiting_for_ai = True
-        self.conversation_history.append({"role": "user", "content": player_text})
-        ai_response = self.ai_client.send_messages(self.conversation_history)
-        self.conversation_history.append({"role": "assistant", "content": ai_response})
-        clean, status = self.extract_status_from_response(ai_response)
-        self.waiting_for_ai = False
-        return clean, status
-
     def start_npc_response(self, user_text):
         # start AI call in background so the main loop stays responsive
         def worker():
@@ -97,6 +82,25 @@ class ChatManager:
                     # add typed character to current input
                     self.player_input += event.unicode
         return "chat"
+    
+#------------
+# NOTE: THESE FUNCTIONS WILL APPLY DIFFERENTLY FOR THE MINI GAME
+#------------
+    def extract_status_from_response(self, text):
+        for status in ["accepted", "rejected", "ongoing"]:
+            tag = f"[STATUS:{status}]"
+            if tag in text:
+                return text.replace(tag, "").strip(), status
+        return text.strip(), "ongoing"
+
+    def ask_npc(self, player_text):
+        self.waiting_for_ai = True
+        self.conversation_history.append({"role": "user", "content": player_text})
+        ai_response = self.ai_client.send_messages(self.conversation_history)
+        self.conversation_history.append({"role": "assistant", "content": ai_response})
+        clean, status = self.extract_status_from_response(ai_response)
+        self.waiting_for_ai = False
+        return clean, status
 
     def draw(self):
         self.screen.blit(self.chat_background, (0,0))
@@ -108,8 +112,7 @@ class ChatManager:
         self.screen.blit(self.name_panel, self.name_panel_rect)
 
         # draw 
-        npc_name = "Little Red Riding Hood"
-        name_surface = self.font.render(npc_name, True, (255, 255, 255))
+        name_surface = self.font.render(self.npc_name, True, (255, 255, 255))
         name_rect = name_surface.get_rect(center=self.name_panel_rect.center)
         self.screen.blit(name_surface, name_rect)
 
