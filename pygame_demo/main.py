@@ -6,6 +6,7 @@ import pygame
 import sys
 from dotenv import load_dotenv
 from groq import Groq
+import random # for random number game
 
  # import chat manager class
 from chat_manager import ChatManager
@@ -95,7 +96,6 @@ forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
 forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 
 
-
 #load background music, set volume, and play in loop
 # pygame.mixer.music.load("pygame_demo/assets/music.mp3")
 # pygame.mixer.music.set_volume(0.5)
@@ -109,6 +109,14 @@ white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 32)
 #clock for controlling frame rate (i.e. how fast the game loop runs)
+
+#--------------------------------
+# for minigame
+#--------------------------------
+number = random.randint(1, 100)
+player_text = ""
+feedback_text = ""
+
 clock = pygame.time.Clock()
 
 #-------------------------
@@ -192,20 +200,40 @@ def draw_minigame():
     global game_state
     screen.blit(forest_chat, (0,0))
     screen.blit(gnome_chat, gnome_chat_rect)
-    
+    gnome = font.render('You want to cross this forest? If you guess the ' \
+    'number in my mind, I\'ll let you pass', True, black)
+    screen.blit(gnome, (10, 10))
+    handle_text_input(event)
 
+
+# input from player
+def handle_text_input(event):
+    global player_text
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_BACKSPACE:
+            player_text = player_text[:-1]
+        elif event.key == pygame.K_RETURN:
+            submit_guess(player_text)
+            player_text = ""
+        else:
+            player_text += event.unicode
+
+# whether player guessed number
+def submit_guess(text):
+    test = font.render("text", True, black)
+    screen.blit(test, (40, 40))
 
 def draw_intro():
-        # draw intro screen with title
-        screen.fill(black)
-        title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
-        title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
+     # draw intro screen with title
+    screen.fill(black)
+    title = font.render("Welcome to the world of Little Red Riding Hood!", True, white)
+    title_rect = title.get_rect(center=(screen.get_width()//2, screen.get_height()//2))
         
-        # draw instructions below title
-        instructions = font.render("Press ENTER to start.", True, white)
-        instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
-        screen.blit(title, title_rect)
-        screen.blit(instructions, instructions_rect)
+    # draw instructions below title
+    instructions = font.render("Press ENTER to start.", True, white)
+    instructions_rect = instructions.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 50))
+    screen.blit(title, title_rect)
+    screen.blit(instructions, instructions_rect)
 
 #----------------
 # main game loop
@@ -266,3 +294,41 @@ while running:
 #------------
 pygame.quit()
 sys.exit()
+
+# -------
+# system prompts
+RED_SYSTEM_PROMPT = """
+You are a kind and curious girl. You love exploring the forest and spending time with your grandmother.
+You are friendly, brave, and always eager to learn new things. 
+You have a strong connection to nature and often talk to animals in the forest.
+You have arrived at your grandmother's house after you have been traveling through the woods
+You greet your grandmother without suspicion.
+After your grandmother greets you, you notice something strange about her appearance.
+You can ask her about one of the following, only ONE at a time:
+- great big eyes
+- great big ears
+- great big teeth
+- great big furry coat
+Your task is to figure out what is wrong with your grandmother, if there is something wrong.
+If it seems that you are in danger or that your grandmother is a wolf in disguise, you should scream for help.
+Otherwise, you should have a friendly conversation with your grandmother and ask her about her day.
+
+RULES:
+- track your internal state and feelings as you interact with your grandmother.
+- At the END of every response, you MUST include a status tag in square brackets indicating how the date is going:
+    [STATUS:ongoing] - if you are still unsure about your grandmother and want to keep talking
+    [STATUS:accepted] - if grandmother keeps kind tone, mentions love, care, and normal family behavior. If you do not suspect she is a wolf in disguise.
+    [STATUS:rejected] - If grandmother gives clear danger signs like talking about eating you
+- The status tag must be the very last thing in your message.
+- Never mention or explain the status tags.
+- Do not convey your actions, for example "*hug*". You are only speaking your dialogue. 
+- Keep your replies to a maximum of 1 sentence. Be concise.
+"""
+
+GNOME_SYSTEM_PROMPT = """
+You are a quirky gnome. When you encounter the player, you 
+want to play a guess the number game with it. Think of a number 
+but do not reveal it until the player has guesses correctly, only 
+saying whether their guess is higher or lower than your number.
+If they guess correctly, congratulate them
+"""
