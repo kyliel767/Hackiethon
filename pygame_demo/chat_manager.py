@@ -62,7 +62,9 @@ class ChatManager:
 
         thread = threading.Thread(target=worker, daemon=True)
         thread.start()
+    
 
+    # handles player input and returns next game state (either stays in chat or goes back to world)
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             # ESC to exit chat
