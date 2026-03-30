@@ -58,6 +58,7 @@ Rules:
 - Do NOT change capitalization
 - Do NOT omit the tag
 - Do NOT explain the tag
+- NEVER SHOW THE STATUS TAG TO THE PLAYER
 - Do not convey your actions, for example "*hug*". You are only speaking your dialogue. 
 - Keep your replies to a maximum of 3 lines. Be concise.
 """
@@ -66,7 +67,7 @@ Rules:
 #--------------------------
 # ai configuration
 #--------------------------
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 class AIClient:
     def __init__(self):

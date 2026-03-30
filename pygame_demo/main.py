@@ -364,7 +364,7 @@ def draw_loading():
     screen.blit(loading_background, (0,0))
     if pygame.time.get_ticks() - start_time > loading_duration:
         if part_of_game == 0:
-            game_state = "forest"
+            game_state = "forest_narration"
             part_of_game = 1
         elif part_of_game == 1:
             game_state = "house_narration"
@@ -392,7 +392,6 @@ while running:
             if game_state == "intro" and event.key == pygame.K_RETURN:
                 game_state = "loading"
                 start_time = pygame.time.get_ticks()
-                #game_state = "forest_narration"
                 narrator.start_narration(FOREST_NARRATION)
             
             # handle chat events if in chat state
