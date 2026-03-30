@@ -210,7 +210,7 @@ state4 = make_text_state()
 #------------
 # game state
 #------------
-game_state = "house"
+game_state = "intro"
 
 #------------
 # functions
