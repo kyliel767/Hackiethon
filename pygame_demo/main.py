@@ -63,7 +63,7 @@ loading_background = pygame.transform.scale(loading_background, (1020, 780))
 
 # loading... background setup
 start_time = 0
-loading_duration = 2000 
+loading_duration = 1500 
 
 #load failure ending frames into a list
 walk_frames = []
@@ -214,6 +214,11 @@ state2 = make_text_state()
 state3 = make_text_state()
 state4 = make_text_state()
 
+# ----------
+# for loading... screen
+part_of_game = 0
+# ----------
+
 
 #------------
 # game state
@@ -355,9 +360,14 @@ def draw_good_ending():
 def draw_loading():
     global start_time
     global game_state
+    global part_of_game
     screen.blit(loading_background, (0,0))
     if pygame.time.get_ticks() - start_time > loading_duration:
-             game_state = "house_narration"
+        if part_of_game == 0:
+            game_state = "forest"
+            part_of_game = 1
+        elif part_of_game == 1:
+            game_state = "house_narration"
 
 #----------------
 # main game loop
@@ -380,7 +390,9 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "forest_narration"
+                game_state = "loading"
+                start_time = pygame.time.get_ticks()
+                #game_state = "forest_narration"
                 narrator.start_narration(FOREST_NARRATION)
             
             # handle chat events if in chat state
@@ -444,6 +456,7 @@ while running:
         draw_good_ending()
     elif game_state == "bad_ending":
         draw_bad_ending()
+    
     elif game_state == "loading":
          draw_loading()
 
