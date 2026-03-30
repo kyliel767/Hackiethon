@@ -57,6 +57,14 @@ forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 earth_background = pygame.image.load("pygame_demo/assets/earth.png")
 earth_background = pygame.transform.scale(earth_background, (1020, 780))
 
+# loading... background
+loading_background = pygame.image.load("pygame_demo/assets/loading.png")
+loading_background = pygame.transform.scale(loading_background, (1020, 780))
+
+# loading... background setup
+start_time = 0
+loading_duration = 1500 
+
 #load failure ending frames into a list
 walk_frames = []
 for i in range(1, 10):
@@ -209,7 +217,10 @@ state4 = make_text_state()
 #transition variables to ending
 ending_timer = 0
 
-
+# ----------
+# for loading... screen
+part_of_game = 0
+# ----------
 
 #------------
 # game state
@@ -348,6 +359,18 @@ def draw_good_ending():
             if state2["done"]:
                 draw_animated_text(screen, ["Welcome back to Earth"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 20) , screen.get_width()//2, screen.get_height()//2 + 30, white, state=state3)
 
+def draw_loading():
+    global start_time
+    global game_state
+    global part_of_game
+    screen.blit(loading_background, (0,0))
+    if pygame.time.get_ticks() - start_time > loading_duration:
+        if part_of_game == 0:
+            game_state = "forest_narration"
+            part_of_game = 1
+        elif part_of_game == 1:
+            game_state = "house_narration"
+
 #----------------
 # main game loop
 #----------------
@@ -369,7 +392,8 @@ while running:
         if event.type == pygame.KEYDOWN:
             # ENTER to start game from intro screen
             if game_state == "intro" and event.key == pygame.K_RETURN:
-                game_state = "forest_narration"
+                game_state = "loading"
+                start_time = pygame.time.get_ticks()
                 narrator.start_narration(FOREST_NARRATION)
             
             # handle chat events if in chat state
@@ -409,6 +433,12 @@ while running:
     # logic for narration (no movement allowed)
     if game_state == "house_narration" or game_state == "forest_narration":
         narrator.update()
+    
+    # logic for chat panel with typewriter effect
+    if game_state == "chat":
+        red_chat_manager.update()
+    if game_state == "minigame":
+        gnome_chat_manager.update()
     #------
     # draw
     #------
@@ -435,7 +465,9 @@ while running:
     elif game_state == "bad_ending":
         if pygame.time.get_ticks() - ending_timer >= 4000:
             draw_bad_ending()
-
+    
+    elif game_state == "loading":
+         draw_loading()
 
     # ----
     # status update
@@ -453,7 +485,8 @@ while running:
         new_state = gnome_chat_manager.check_status("minigame")
         # only trigger the narration if the state is actually changing right now
         if new_state == "house_narration":
-            game_state = "house_narration"
+            game_state = "loading"
+            start_time = pygame.time.get_ticks()
             narrator.start_narration(HOUSE_NARRATION)
         else:
             game_state = new_state
