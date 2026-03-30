@@ -34,7 +34,7 @@ pygame.mixer.init()
 #create game window of width height 
 screen = pygame.display.set_mode((1020, 780))
 #set the title of the window
-pygame.display.set_caption("NPC Chat Demo")
+pygame.display.set_caption("Wolf's Canon Rewrite")
 
 
 #load intro background image
