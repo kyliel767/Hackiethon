@@ -153,6 +153,19 @@ FONT_FILE = "PressStart2P-Regular.ttf"
 
 clock = pygame.time.Clock()
 
+
+#--------------------------------
+# define hitboxes for collision detection
+#--------------------------------
+
+# define hit boxes for the forest, Rect(left, top, width, height)
+forest_hitboxes = [pygame.Rect(0, 0, 1020, 400)]
+
+# define hit boxes for the house
+house_hitboxes = [pygame.Rect(0, 0, 568, 255), pygame.Rect(568, 0, 160, 235), pygame.Rect(728, 0, 292, 255),
+                  pygame.Rect(0, 255, 124, 347), pygame.Rect(0, 609, 39, 171), pygame.Rect(291, 255, 56, 88),
+                  pygame.Rect(681, 395, 213, 216), pygame.Rect(976, 538, 44, 242)]
+
 #-------------------------
 # AI client setup
 #-------------------------
@@ -237,19 +250,34 @@ game_state = "intro"
 #def get_pixelated_font(size):
     #return pygame.font.Font(FONT_FILE, size)
 
-def handle_player_movement(keys, player):
+def handle_player_movement(keys, rect, walls):
+    dx, dy = 0, 0
     if keys[pygame.K_LEFT]:
-        player.x -= player_speed
+        dx = -player_speed
     if keys[pygame.K_RIGHT]:
-        player.x += player_speed
+        dx = player_speed
     if keys[pygame.K_UP]:
-        player.y -= player_speed
+        dy = -player_speed
     if keys[pygame.K_DOWN]:
-        player.y += player_speed
-    
+        dy = player_speed
+
+    # Horizontal Movement & Collision 
+    rect.x += dx
+    for wall in walls:
+        if rect.colliderect(wall):
+            if dx > 0: rect.right = wall.left
+            if dx < 0: rect.left = wall.right
+
+    # Vertical Movement & Collision
+    rect.y += dy
+    for wall in walls:
+        if rect.colliderect(wall):
+            if dy > 0: rect.bottom = wall.top
+            if dy < 0: rect.top = wall.bottom
+
     #keep player inside screen
-    player.x = max(0, min(player.x, screen.get_width() - player.width))
-    player.y = max(0, min(player.y, screen.get_height() - player.height))
+    rect.x = max(0, min(rect.x, screen.get_width() - rect.width))
+    rect.y = max(0, min(rect.y, screen.get_height() - rect.height))
 
 def check_npc_interaction(keys, player):
     global game_state
@@ -456,11 +484,11 @@ while running:
     # state update
     #--------------
     if game_state == "house":
-        handle_player_movement(keys, wolf_grandma_rect)
+        handle_player_movement(keys, wolf_grandma_rect, house_hitboxes)
         check_npc_interaction(keys, wolf_grandma_rect)
     
     if game_state == "forest":
-        handle_player_movement(keys, player_rect)
+        handle_player_movement(keys, player_rect, forest_hitboxes)
         check_npc_interaction(keys, player_rect)
 
     # logic for narration (no movement allowed)
