@@ -214,7 +214,7 @@ ending_timer = 0
 #------------
 # game state
 #------------
-game_state = "house"
+game_state = "intro"
 
 #------------
 # functions
