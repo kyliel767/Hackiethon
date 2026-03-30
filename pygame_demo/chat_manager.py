@@ -99,12 +99,18 @@ class ChatManager:
             
             # prevent typing while AI is processing or typing out its response
             is_typing = self.npc_char_index < len(self.active_npc_text)
+
+            # If the user hits Enter while the NPC is still typing, skip to the end of the text
+            if is_typing and event.key == pygame.K_RETURN:
+                return self.skip_typewriter()
+
+            # Only allow input if we're not waiting for the AI and the NPC isn't still typing
             if not self.waiting_for_ai and not is_typing:
-                # 1. Backspace is always allowed
+                # Backspace is always allowed
                 if event.key == pygame.K_BACKSPACE:
                     self.player_input = self.player_input[:-1]
 
-                # 2. Enter sends ONLY the allowed text to the AI
+                # Enter sends ONLY the allowed text to the AI
                 elif event.key == pygame.K_RETURN and self.player_input.strip():
                     # We pass the cleaned, visible input to the AI
                     message_to_send = self.player_input.strip()
@@ -116,7 +122,7 @@ class ChatManager:
                     self.start_npc_response(message_to_send)
                     self.player_input = "" 
 
-                # 3. Text Input Gatekeeper
+                # Text Input Gatekeeper
                 elif event.unicode and event.unicode.isprintable():
                     # Define boundaries
                     padding_x = 28
@@ -137,13 +143,13 @@ class ChatManager:
             return "minigame"
         else:
             raise ValueError("Unknown NPC name in ChatManager")
-    
 
     # for little red riding hood
     def extract_status_from_response(self, text):
         for status in ["accepted", "rejected", "ongoing"]:
             tag = f"[STATUS:{status}]"
             if tag in text:
+                # update to the new status
                 self.status = status
                 return text.replace(tag, "").strip(), status
         return text.strip(), "ongoing"
@@ -153,6 +159,7 @@ class ChatManager:
         for status in ["higher", "lower", "accepted", "waiting", "change"]:
             tag = f"[STATUS:{status}]"
             if tag in text:
+                # update to the new status
                 self.status = status
                 return text.replace(tag, "").strip(), status
         return text.strip(), "ongoing"
@@ -229,3 +236,14 @@ class ChatManager:
             if self.status == "change":
                 return "house_narration"
         return current_state
+    
+    # handles the logic for skipping the typewriter effect and revealing the full NPC text immediately
+    def skip_typewriter(self):
+        # Set the character index to the full length of the NPC text
+        self.npc_char_index = len(self.active_npc_text)
+        
+        # Maintain state based on the current NPC
+        if self.npc_name == "Little Red Riding Hood":
+            return "chat"
+        elif self.npc_name == "Gnome":
+            return "minigame"
