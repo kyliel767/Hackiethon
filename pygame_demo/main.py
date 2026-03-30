@@ -63,7 +63,7 @@ loading_background = pygame.transform.scale(loading_background, (1020, 780))
 
 # loading... background setup
 start_time = 0
-loading_duration = 1500 
+loading_duration = 1000 
 
 #load failure ending frames into a list
 walk_frames = []
@@ -217,6 +217,7 @@ state4 = make_text_state()
 # ----------
 # for loading... screen
 part_of_game = 0
+win = 0
 # ----------
 
 
@@ -361,6 +362,7 @@ def draw_loading():
     global start_time
     global game_state
     global part_of_game
+    global win 
     screen.blit(loading_background, (0,0))
     if pygame.time.get_ticks() - start_time > loading_duration:
         if part_of_game == 0:
@@ -368,6 +370,11 @@ def draw_loading():
             part_of_game = 1
         elif part_of_game == 1:
             game_state = "house_narration"
+            part_of_game = 2
+        elif win == 0:
+            game_state = "good_ending"
+        elif win == 1:
+            game_state = "bad_ending"
 
 #----------------
 # main game loop
@@ -442,12 +449,11 @@ while running:
     #------
     if game_state == "intro":
         draw_intro()
-        
-    if game_state == "house" or game_state == "house_narration":
+    elif game_state == "house" or game_state == "house_narration":
         draw_house() # always draw the room in the background
         if game_state == "house_narration":
             narrator.draw() # draw panel on top of room
-    if game_state == "house":
+    elif game_state == "house":
         draw_house()
     elif game_state == "chat":
         red_chat_manager.draw()
@@ -461,7 +467,6 @@ while running:
         draw_good_ending()
     elif game_state == "bad_ending":
         draw_bad_ending()
-    
     elif game_state == "loading":
          draw_loading()
 
@@ -471,9 +476,13 @@ while running:
     if game_state == "chat":
         new_state = red_chat_manager.check_status("chat")
         if new_state == "win":
-            game_state = "good_ending"
+            game_state = "loading"
+            start_time = pygame.time.get_ticks()
+
         elif new_state == "game_over":
-            game_state = "bad_ending"
+            win = 1
+            game_state = "loading"
+            start_time = pygame.time.get_ticks()
 
     if game_state == "minigame":
         new_state = gnome_chat_manager.check_status("minigame")
