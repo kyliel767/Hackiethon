@@ -432,6 +432,12 @@ while running:
     # logic for narration (no movement allowed)
     if game_state == "house_narration" or game_state == "forest_narration":
         narrator.update()
+    
+    # logic for chat panel with typewriter effect
+    if game_state == "chat":
+        red_chat_manager.update()
+    if game_state == "minigame":
+        gnome_chat_manager.update()
     #------
     # draw
     #------

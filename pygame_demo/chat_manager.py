@@ -1,5 +1,6 @@
 import pygame
 import threading
+
 #------------
 # chat manager
 #------------
@@ -26,6 +27,12 @@ class ChatManager:
         self.player_input = ""
         self.waiting_for_ai = False
         self.conversation_history = []
+
+        # typewriter state
+        self.active_npc_text = ""    # the full string returned by the AI
+        self.npc_char_index = 0      # current number of characters revealed
+        self.type_speed = 1          # frames per character (lower is faster)
+        self.type_timer = 0          # frame counter
 
     def enter_chat(self):
         # reset game state variables
@@ -55,16 +62,32 @@ class ChatManager:
         return lines
 
     def start_npc_response(self, user_text):
+        # reset typewriter variables before the AI starts "thinking"
+        self.active_npc_text = ""
+        self.npc_char_index = 0
+        self.waiting_for_ai = True
+
         # start AI call in background so the main loop stays responsive
         def worker():
             clean, status = self.ask_npc(user_text)
+            # update the active text for the typewriter to begin
+            self.active_npc_text = clean
             self.messages.append("NPC: " + clean)
+            self.waiting_for_ai = False
 
         thread = threading.Thread(target=worker, daemon=True)
         thread.start()
     
+    # handle typewriter timing and character increment
+    def update(self):
+        # only type if we have text to show and aren't still waiting for the API
+        if not self.waiting_for_ai and self.npc_char_index < len(self.active_npc_text):
+            self.type_timer += 1
+            if self.type_timer >= self.type_speed:
+                self.npc_char_index += 1
+                self.type_timer = 0
 
-    # handles player input and returns next game state (either stays in chat or goes back to house)
+    # handles player input and returns next game state
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             # ESC to exit chat
@@ -73,12 +96,21 @@ class ChatManager:
                     return "house"
                 elif self.npc_name == "Gnome":
                    return "forest"
-            if not self.waiting_for_ai:
-                # 1. Backspace is always allowed
+            
+            # prevent typing while AI is processing or typing out its response
+            is_typing = self.npc_char_index < len(self.active_npc_text)
+
+            # If the user hits Enter while the NPC is still typing, skip to the end of the text
+            if is_typing and event.key == pygame.K_RETURN:
+                return self.skip_typewriter()
+
+            # Only allow input if we're not waiting for the AI and the NPC isn't still typing
+            if not self.waiting_for_ai and not is_typing:
+                # Backspace is always allowed
                 if event.key == pygame.K_BACKSPACE:
                     self.player_input = self.player_input[:-1]
 
-                # 2. Enter sends ONLY the allowed text to the AI
+                # Enter sends ONLY the allowed text to the AI
                 elif event.key == pygame.K_RETURN and self.player_input.strip():
                     # We pass the cleaned, visible input to the AI
                     message_to_send = self.player_input.strip()
@@ -90,7 +122,7 @@ class ChatManager:
                     self.start_npc_response(message_to_send)
                     self.player_input = "" 
 
-                # 3. Text Input Gatekeeper
+                # Text Input Gatekeeper
                 elif event.unicode and event.unicode.isprintable():
                     # Define boundaries
                     padding_x = 28
@@ -103,7 +135,7 @@ class ChatManager:
                     # Only add the character to the actual variable if it fits
                     if text_width <= max_width:
                         self.player_input += event.unicode
-                    # Else: Do nothing. The character is discarded and never stored.
+
         # Maintain state
         if self.npc_name == "Little Red Riding Hood":
             return "chat"
@@ -111,39 +143,40 @@ class ChatManager:
             return "minigame"
         else:
             raise ValueError("Unknown NPC name in ChatManager")
-    
 
-# for little red riding hood
+    # for little red riding hood
     def extract_status_from_response(self, text):
         for status in ["accepted", "rejected", "ongoing"]:
             tag = f"[STATUS:{status}]"
             if tag in text:
+                # update to the new status
                 self.status = status
                 return text.replace(tag, "").strip(), status
         return text.strip(), "ongoing"
     
-# for the gnome 
+    # for the gnome 
     def extract_number_from_response(self, text):
         for status in ["higher", "lower", "accepted", "waiting", "change"]:
             tag = f"[STATUS:{status}]"
             if tag in text:
+                # update to the new status
                 self.status = status
                 return text.replace(tag, "").strip(), status
         return text.strip(), "ongoing"
 
     def ask_npc(self, player_text):
-        self.waiting_for_ai = True
+        # note: self.waiting_for_ai is set to True in start_npc_response
         self.conversation_history.append({"role": "user", "content": player_text})
         ai_response = self.ai_client.send_messages(self.conversation_history)
         self.conversation_history.append({"role": "assistant", "content": ai_response})
+
+        # extract status and clean text based on which NPC we're talking to        
         if self.npc_name == "Little Red Riding Hood":
             clean, status = self.extract_status_from_response(ai_response)
         elif self.npc_name == "Gnome":
             clean, status = self.extract_number_from_response(ai_response)
-
         else:
             raise ValueError("Error with npc")
-        self.waiting_for_ai = False
         return clean, status
 
     def draw(self):
@@ -174,24 +207,28 @@ class ChatManager:
             thinking_surface = self.font.render("Thinking...", True, (180, 180, 180))
             self.screen.blit(thinking_surface, (self.chat_panel_rect.x + padding_x, npc_y))
         else:
-            # Only show the latest NPC message
-            npc_msgs = [m for m in self.messages if m.startswith("NPC:")]
-            if npc_msgs:
-                latest = npc_msgs[-1].replace("NPC: ", "")
-                curr_y = npc_y
-                for line in self.wrap_text(latest, self.font, max_width):
-                    # Only draw if the text hasn't reached the fixed input slot
-                    if curr_y < input_y - 10:
-                        txt = self.font.render(line, True, (255, 255, 255))
-                        self.screen.blit(txt, (self.chat_panel_rect.x + padding_x, curr_y))
-                        curr_y += line_height
+            # get the current revealed portion of the text
+            visible_chunk = self.active_npc_text[:self.npc_char_index]
+            
+            curr_y = npc_y
+            # wrap only the revealed portion
+            for line in self.wrap_text(visible_chunk, self.font, max_width):
+                if curr_y < input_y - 10:
+                    txt = self.font.render(line, True, (255, 255, 255))
+                    self.screen.blit(txt, (self.chat_panel_rect.x + padding_x, curr_y))
+                    curr_y += line_height
 
         # --- PLAYER INPUT SLOT ---
-        # Disappears while AI is thinking
-        if not self.waiting_for_ai:
-            input_surface = self.font.render("> " + self.player_input, True, (255, 255, 255))
+        # Disappears while AI is thinking or still "typing" response
+        is_typing = self.npc_char_index < len(self.active_npc_text)
+        if not self.waiting_for_ai and not is_typing:
+            # cursor for blinking effect
+            cursor = self.get_blinking_cursor()
+            # render the player's input with the cursor
+            input_surface = self.font.render("> " + self.player_input + cursor, True, (255, 255, 255))
             self.screen.blit(input_surface, (self.chat_panel_rect.x + padding_x, input_y))
     
+    # returns next game state based on current status after talking with the NPC
     def check_status(self, current_state):
         if self.npc_name == "Little Red Riding Hood":
             if self.status == "accepted":
@@ -202,4 +239,23 @@ class ChatManager:
             if self.status == "change":
                 return "house_narration"
         return current_state
-
+    
+    # handles the logic for skipping the typewriter effect and revealing the full NPC text immediately
+    def skip_typewriter(self):
+        # Set the character index to the full length of the NPC text
+        self.npc_char_index = len(self.active_npc_text)
+        
+        # Maintain state based on the current NPC
+        if self.npc_name == "Little Red Riding Hood":
+            return "chat"
+        elif self.npc_name == "Gnome":
+            return "minigame"
+        
+    # functionto get a blinking cursor for the player's input when the NPC is not typing
+    def get_blinking_cursor(self):
+        # Use pygame ticks to create a toggle every 500ms (0.5 seconds)
+        # // 500 converts milliseconds to half-second intervals
+        # % 2 == 0 creates a True/False blink pattern
+        if (pygame.time.get_ticks() // 500) % 2 == 0:
+            return "|"
+        return ""
