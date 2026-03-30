@@ -1,10 +1,8 @@
  ## Description of the game
- "Wolf's Canon Rewrite" is an adventure game where you as the player is
- hit by a truck and transported to the world of Little Red Riding Hood as
- the Big Bad Wolf. A mystery entity tells you that your task is to change
- the original plot of the classic childhood story in which the wolf
- is now successful in eating Little Red Riding Hood in order to be
- transported out of the game. You encounter a creature throughout your
+ "Wolf's Canon Rewrite" is an adventure game in which you as the player is
+ hit by a truck and transported to the world of Little Red Riding Hood. You awaken as the Big Bad Wolf, and a mysterious entity tells you that you must change
+ the original plot and avert your death, in order to be
+ transported back to your world. You encounter a creature throughout your
  journey that will guide you towards Little Red Riding Hood. Good luck!
 
  ## How AI was integrated
