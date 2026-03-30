@@ -150,9 +150,7 @@ narration_font = pygame.font.Font(filename="wolf_canon_rewrite/assets/PressStart
 # Font path for the pixaleted text
 FONT_FILE = "PressStart2P-Regular.ttf"
 #clock for controlling frame rate (i.e. how fast the game loop runs)
-
 clock = pygame.time.Clock()
-
 
 #--------------------------------
 # define hitboxes for collision detection
@@ -164,7 +162,7 @@ forest_hitboxes = [pygame.Rect(0, 0, 1020, 400)]
 # define hit boxes for the house
 house_hitboxes = [pygame.Rect(0, 0, 568, 255), pygame.Rect(568, 0, 160, 235), pygame.Rect(728, 0, 292, 255),
                   pygame.Rect(0, 255, 124, 347), pygame.Rect(0, 609, 39, 171), pygame.Rect(291, 255, 56, 88),
-                  pygame.Rect(681, 395, 213, 216), pygame.Rect(976, 538, 44, 242)]
+                  pygame.Rect(681, 395, 184, 216), pygame.Rect(976, 538, 44, 242)]
 
 #-------------------------
 # AI client setup
