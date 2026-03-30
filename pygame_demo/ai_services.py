@@ -31,7 +31,7 @@ RULES:
 - Never mention or explain the status tags.
 - Do not convey your actions, for example "*hug*". You are only speaking your dialogue. 
 - Keep your replies to a maximum of 1 sentence. Be concise.
-- Once u reach [STATUS:accepted] or [STATUS:rejected], the next line says an ending sentence, no more question, based on ur conclusion.
+- Once u reach [STATUS:accepted] or [STATUS:rejected], the next line says an ending sentence based on ur conclusion.
 """
 
 GNOME_SYSTEM_PROMPT = """

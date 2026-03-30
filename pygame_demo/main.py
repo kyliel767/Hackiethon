@@ -131,14 +131,13 @@ wolf_grandma_rect.x = 550
 wolf_grandma_rect.y = 500
 wolf_grandma_speed = 4
 
-#load background music, set volume, and play in loop
-pygame.mixer.music.load("pygame_demo/assets/music1.mp3")
-pygame.mixer.music.set_volume(0.5)
-pygame.mixer.music.play(-1) #-1 means loop indefinitely
-
-#load sound effect
+#load sound effect, set stop playing variable, handle music path
 fail_sound = pygame.mixer.Sound("pygame_demo/assets/fail_sound.mp3")
 win_sound = pygame.mixer.Sound("pygame_demo/assets/win_sound.mp3")
+stop_sound = False
+music = "pygame_demo/assets/music1.mp3"
+chat_music = "pygame_demo/assets/chat_music.mp3"
+current_music = None
 
 #--------------------------------
 # define colours, font, and clock
@@ -316,7 +315,7 @@ def draw_bad_ending():
 
     # draw current frame
     screen.blit(walk_frames[current_frame], (0, 0))
-    
+ 
 
     # blend next frame on top with increasing opacity
     if current_frame < len(walk_frames) - 1:
@@ -326,6 +325,12 @@ def draw_bad_ending():
         screen.blit(next_frame, (0, 0))
 
     if current_frame == len(walk_frames) - 1:
+        global stop_sound
+
+        if not stop_sound:
+            fail_sound.play()
+            stop_sound = True
+        
         draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 90), screen.get_width()//2, screen.get_height()//2 - 120, white, 120, line_delay=0.06, state=state4)
 
 def draw_good_ending():
@@ -357,7 +362,13 @@ def draw_good_ending():
         screen.blit(good_fade_surface, (0, 0))
 
         # once fully fanded go to the final ending screen
+        global stop_sound
+
         if good_fade_alpha >= 255:  
+            if not stop_sound:
+                win_sound.play()
+                stop_sound = True
+
             screen.blit(earth_background, (0,0))
             draw_animated_text(screen, ["CONGRATULATIONS"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 50) , screen.get_width()//2, screen.get_height()//2 - 250, white, state=state1)
             if state1["done"]:
@@ -382,6 +393,16 @@ def draw_loading():
             game_state = "good_ending"
         elif win == 1:
             game_state = "bad_ending"
+
+
+def play_music(file, Loop=True):
+    global current_music
+    if current_music != file:
+        current_music = file
+        pygame.mixer.music.load(file)
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(-1 if Loop else 0)
+
 
 #----------------
 # main game loop
@@ -455,6 +476,7 @@ while running:
     # draw
     #------
     if game_state == "intro":
+        play_music(music)
         draw_intro()
     elif game_state == "house" or game_state == "house_narration":
         draw_house() # always draw the room in the background
@@ -463,19 +485,24 @@ while running:
     elif game_state == "house":
         draw_house()
     elif game_state == "chat":
+        play_music(chat_music)
         red_chat_manager.draw()
     elif game_state == "forest" or game_state == "forest_narration":
         draw_forest()
         if game_state == "forest_narration":
             narrator.draw()
     elif game_state == "minigame":
+        play_music(chat_music)
         gnome_chat_manager.draw()
     elif game_state == "good_ending":
+        play_music(music)
         if pygame.time.get_ticks() - ending_timer >= 4000:
             draw_good_ending()
     elif game_state == "bad_ending":
+        play_music(music)
         draw_bad_ending()
     elif game_state == "loading":
+         play_music(music)
          draw_loading()
 
     # ----
