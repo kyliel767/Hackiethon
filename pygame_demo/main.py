@@ -132,9 +132,13 @@ wolf_grandma_rect.y = 500
 wolf_grandma_speed = 4
 
 #load background music, set volume, and play in loop
-# pygame.mixer.music.load("pygame_demo/assets/music.mp3")
-# pygame.mixer.music.set_volume(0.5)
-# pygame.mixer.music.play(-1) #-1 means loop indefinitely
+pygame.mixer.music.load("pygame_demo/assets/music1.mp3")
+pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.play(-1) #-1 means loop indefinitely
+
+#load sound effect
+fail_sound = pygame.mixer.Sound("pygame_demo/assets/fail_sound.mp3")
+win_sound = pygame.mixer.Sound("pygame_demo/assets/win_sound.mp3")
 
 #--------------------------------
 # define colours, font, and clock
@@ -214,12 +218,14 @@ state2 = make_text_state()
 state3 = make_text_state()
 state4 = make_text_state()
 
+#transition variables to ending
+ending_timer = 0
+
 # ----------
 # for loading... screen
 part_of_game = 0
 win = 0
 # ----------
-
 
 #------------
 # game state
@@ -310,6 +316,7 @@ def draw_bad_ending():
 
     # draw current frame
     screen.blit(walk_frames[current_frame], (0, 0))
+    
 
     # blend next frame on top with increasing opacity
     if current_frame < len(walk_frames) - 1:
@@ -464,7 +471,8 @@ while running:
     elif game_state == "minigame":
         gnome_chat_manager.draw()
     elif game_state == "good_ending":
-        draw_good_ending()
+        if pygame.time.get_ticks() - ending_timer >= 4000:
+            draw_good_ending()
     elif game_state == "bad_ending":
         draw_bad_ending()
     elif game_state == "loading":
