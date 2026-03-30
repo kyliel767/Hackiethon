@@ -210,7 +210,7 @@ state4 = make_text_state()
 #------------
 # game state
 #------------
-game_state = "intro"
+game_state = "house"
 
 #------------
 # functions
@@ -435,7 +435,7 @@ while running:
     # status update
     # ----
     if game_state == "chat":
-        game_state = red_chat_manager.check_status("chat")
+        new_state = red_chat_manager.check_status("chat")
         if new_state == "win":
             game_state = "good_ending"
         elif new_state == "game_over":
@@ -449,10 +449,6 @@ while running:
             narrator.start_narration(HOUSE_NARRATION)
         else:
             game_state = new_state
-
-    
-    
-    
 
     #----------------------------------------
     # update the display and control fps
