@@ -38,4 +38,11 @@ py -m venv .venv
 
 pip install -r requirements.txt
 ```
+## Technologies used
+* Pygame
+
+## Acknowledgments
+We thank HackMelbourne for running the 2026 Hackiethon, providing 
+food and providing help. We acknowledge the creators of the assets
+we have used in this game for their creative designs and music.
 
