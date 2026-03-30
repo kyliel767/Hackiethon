@@ -206,6 +206,10 @@ state2 = make_text_state()
 state3 = make_text_state()
 state4 = make_text_state()
 
+#transition variables to ending
+ending_timer = 0
+
+
 
 #------------
 # game state
@@ -426,9 +430,11 @@ while running:
     elif game_state == "minigame":
         gnome_chat_manager.draw()
     elif game_state == "good_ending":
-        draw_good_ending()
+        if pygame.time.get_ticks() - ending_timer >= 4000:
+            draw_good_ending()
     elif game_state == "bad_ending":
-        draw_bad_ending()
+        if pygame.time.get_ticks() - ending_timer >= 4000:
+            draw_bad_ending()
 
 
     # ----
@@ -437,8 +443,10 @@ while running:
     if game_state == "chat":
         new_state = red_chat_manager.check_status("chat")
         if new_state == "win":
+            ending_timer = pygame.time.get_ticks()
             game_state = "good_ending"
         elif new_state == "game_over":
+            ending_timer = pygame.time.get_ticks()
             game_state = "bad_ending"
 
     if game_state == "minigame":
