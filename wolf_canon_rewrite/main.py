@@ -157,7 +157,7 @@ clock = pygame.time.Clock()
 #--------------------------------
 
 # define hit boxes for the forest, Rect(left, top, width, height)
-forest_hitboxes = [pygame.Rect(0, 0, 1020, 400)]
+forest_hitboxes = [pygame.Rect(0, 0, 1020, 400), pygame.Rect(774, 376, 50, 112)]
 
 # define hit boxes for the house
 house_hitboxes = [pygame.Rect(0, 0, 568, 255), pygame.Rect(568, 0, 160, 235), pygame.Rect(728, 0, 292, 255),
