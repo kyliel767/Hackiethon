@@ -132,11 +132,11 @@ wolf_grandma_rect.y = 500
 wolf_grandma_speed = 4
 
 #load sound effect, set stop playing variable, handle music path
-fail_sound = pygame.mixer.Sound("pygame_demo/assets/fail_sound.mp3")
-win_sound = pygame.mixer.Sound("pygame_demo/assets/win_sound.mp3")
+fail_sound = pygame.mixer.Sound("wolf_canon_rewrite/assets/fail_sound.mp3")
+win_sound = pygame.mixer.Sound("wolf_canon_rewrite/assets/win_sound.mp3")
 stop_sound = False
-music = "pygame_demo/assets/music1.mp3"
-chat_music = "pygame_demo/assets/chat_music.mp3"
+music = "wolf_canon_rewrite/assets/music1.mp3"
+chat_music = "wolf_canon_rewrite/assets/chat_music.mp3"
 current_music = None
 
 #--------------------------------
@@ -331,7 +331,7 @@ def draw_bad_ending():
             fail_sound.play()
             stop_sound = True
         
-        draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 90), screen.get_width()//2, screen.get_height()//2 - 120, white, 120, line_delay=0.06, state=state4)
+        draw_animated_text(screen, ["YOU", "FAIL!"], pygame.font.Font("wolf_canon_rewrite/assets/PressStart2P-Regular.ttf", 90), screen.get_width()//2, screen.get_height()//2 - 120, white, 120, line_delay=0.06, state=state4)
 
 def draw_good_ending():
 
