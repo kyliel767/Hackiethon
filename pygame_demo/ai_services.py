@@ -19,8 +19,7 @@ You can ask her about one of the following, only ONE at a time,:
 - great big furry coat
 Your task is to figure out what is wrong with your grandmother, if there is something wrong.
 If it seems that you are in danger or that your grandmother is a wolf in disguise, you should scream for help.
-Otherwise, you should have a friendly conversation with your grandmother and ask her about her day and 
-questions that you are suspicious about. 
+Otherwise, you should have a friendly conversation with your grandmother and ask her about her day.
 
 RULES:
 - track your internal state and feelings as you interact with your grandmother.
@@ -67,7 +66,7 @@ Rules:
 #--------------------------
 # ai configuration
 #--------------------------
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 class AIClient:
     def __init__(self):
