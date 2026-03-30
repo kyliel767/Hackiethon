@@ -162,7 +162,7 @@ forest_hitboxes = [pygame.Rect(0, 0, 1020, 400), pygame.Rect(774, 376, 50, 112)]
 # define hit boxes for the house
 house_hitboxes = [pygame.Rect(0, 0, 568, 255), pygame.Rect(568, 0, 160, 235), pygame.Rect(728, 0, 292, 255),
                   pygame.Rect(0, 255, 124, 347), pygame.Rect(0, 609, 39, 171), pygame.Rect(291, 255, 56, 88),
-                  pygame.Rect(681, 395, 184, 216), pygame.Rect(976, 538, 44, 242)]
+                  pygame.Rect(681, 395, 184, 216), pygame.Rect(976, 538, 44, 242), pygame.Rect(124, 540, 118, 140 )]
 
 #-------------------------
 # AI client setup
