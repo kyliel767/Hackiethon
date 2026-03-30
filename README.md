@@ -1,5 +1,20 @@
-# How to run the game
-## Getting a Groq API Key
+ ## Description of the game
+ "Wolf's Canon Rewrite" is an adventure game where you as the player is
+ hit by a truck and transported to the world of Little Red Riding Hood as
+ the Big Bad Wolf. A mystery entity tells you that your task is to change
+ the original plot of the classic childhood story in which the wolf
+ is now successful in eating Little Red Riding Hood in order to be
+ transported out of the game. You encounter a creature throughout your
+ journey that will guide you towards Little Red Riding Hood. Good luck!
+
+ ## How AI was integrated
+ We used the Groq API model LLama-3.3-70b for the dialogue of the NPCs
+ of the game, such as for Gnome and Little Red Riding Hood. Their dialogue
+ was based on the player's input which allowed the model to make decisions that determined the ending of the game.
+
+
+## How to run the game
+### Getting a Groq API Key
 1. Head to https://console.groq.com/keys
 2. Create an account
 3. Select "Create API Key" and give your API key a name and create
@@ -7,7 +22,7 @@
 5. Create a new .env file in the project folder and type in the following:
 GROQ_API_KEY = "[API_KEY]", replacing [API_KEY] with your API key you copied
 
-## Installing packages to run the API 
+### Installing packages to run the API 
 1. Start by creating a virtual environment 
 On MACOS:
 ```bash
@@ -25,3 +40,5 @@ py -m venv .venv
 
 pip install -r requirements.txt
 ```
+
+
