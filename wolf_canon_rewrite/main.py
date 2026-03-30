@@ -34,31 +34,31 @@ pygame.mixer.init()
 #create game window of width height 
 screen = pygame.display.set_mode((1020, 780))
 #set the title of the window
-pygame.display.set_caption("NPC Chat Demo")
+pygame.display.set_caption("Wolf's Canon Rewrite")
 
 
 #load intro background image
-intro_background = pygame.image.load("pygame_demo/assets/intro-no-word.png")
+intro_background = pygame.image.load("wolf_canon_rewrite/assets/intro-no-word.png")
 intro_background = pygame.transform.scale(intro_background, (1020, 780))
 
 #load house background image
-house_background = pygame.image.load("pygame_demo/assets/house.png")
+house_background = pygame.image.load("wolf_canon_rewrite/assets/house.png")
 house_background = pygame.transform.scale(house_background, (1020, 780))
 #load chat background image
-chat_background = pygame.image.load("pygame_demo/assets/interior.png")
+chat_background = pygame.image.load("wolf_canon_rewrite/assets/interior.png")
 chat_background = pygame.transform.scale(chat_background, (1020, 780))
 #load forest background image
-forest_background = pygame.image.load("pygame_demo/assets/forest.png")
+forest_background = pygame.image.load("wolf_canon_rewrite/assets/forest.png")
 forest_background = pygame.transform.scale(forest_background, (1020, 780))
 # load gnome interaction background
-forest_chat = pygame.image.load("pygame_demo/assets/forest_chat.png")
+forest_chat = pygame.image.load("wolf_canon_rewrite/assets/forest_chat.png")
 forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 # load good ending background
-earth_background = pygame.image.load("pygame_demo/assets/earth.png")
+earth_background = pygame.image.load("wolf_canon_rewrite/assets/earth.png")
 earth_background = pygame.transform.scale(earth_background, (1020, 780))
 
 # loading... background
-loading_background = pygame.image.load("pygame_demo/assets/loading.png")
+loading_background = pygame.image.load("wolf_canon_rewrite/assets/loading.png")
 loading_background = pygame.transform.scale(loading_background, (1020, 780))
 
 # loading... background setup
@@ -68,27 +68,27 @@ loading_duration = 1000
 #load failure ending frames into a list
 walk_frames = []
 for i in range(1, 10):
-    frame = pygame.image.load(f"pygame_demo/assets/end{i}.png")
+    frame = pygame.image.load(f"wolf_canon_rewrite/assets/end{i}.png")
     frame = pygame.transform.scale(frame, (1020, 780))
     walk_frames.append(frame)
 
 #load portal animation
-portal_frames = load_spritesheet("pygame_demo/assets/portal_sheet.png", num_frames=8, scale=(200, 200))
+portal_frames = load_spritesheet("wolf_canon_rewrite/assets/portal_sheet.png", num_frames=8, scale=(200, 200))
 
 
 # load chat panel artwork (no scaling)
-chat_panel = pygame.image.load("pygame_demo/assets/chat_panel.png").convert_alpha()
+chat_panel = pygame.image.load("wolf_canon_rewrite/assets/chat_panel.png").convert_alpha()
 chat_panel_rect = chat_panel.get_rect()
 chat_panel_rect.centerx = screen.get_width() // 2
 chat_panel_rect.bottom = screen.get_height() - 20
 
-name_panel = pygame.image.load("pygame_demo/assets/name_panel.png").convert_alpha()
+name_panel = pygame.image.load("wolf_canon_rewrite/assets/name_panel.png").convert_alpha()
 name_panel_rect = name_panel.get_rect()
 name_panel_rect.centerx = screen.get_width() // 2
 name_panel_rect.top = 20
 
 #load npc sprite
-red_image = pygame.image.load("pygame_demo/assets/red.png")
+red_image = pygame.image.load("wolf_canon_rewrite/assets/red.png")
 red_house_image = pygame.transform.scale(red_image, (120, 120))
 red_chat_image = pygame.transform.scale(red_image, (400, 400))
 #
@@ -103,7 +103,7 @@ red_chat_rect.bottom = chat_panel_rect.y + 100
 red_chat_rect.bottom = chat_panel_rect.y + 100
 
 #player sprite
-player = pygame.image.load("pygame_demo/assets/wolf.png")
+player = pygame.image.load("wolf_canon_rewrite/assets/wolf.png")
 player = pygame.transform.scale(player, (150, 150))
 player_rect = player.get_rect()
 player_rect.x = 200
@@ -111,7 +111,7 @@ player_rect.y = 450
 player_speed = 4
 
 # load gnome
-gnome_npc = pygame.image.load("pygame_demo/assets/gnome.png")
+gnome_npc = pygame.image.load("wolf_canon_rewrite/assets/gnome.png")
 gnome_npc = pygame.transform.scale(gnome_npc, (200, 200))
 gnome_rect = gnome_npc.get_rect()
 gnome_rect.x = 700
@@ -124,7 +124,7 @@ gnome_chat_rect.bottom = chat_panel_rect.y + 100
 gnome_chat_rect.bottom = chat_panel_rect.y + 100
 
 # load wolf as grandma
-wolf_grandma = pygame.image.load("pygame_demo/assets/grandma.png")
+wolf_grandma = pygame.image.load("wolf_canon_rewrite/assets/grandma.png")
 wolf_grandma = pygame.transform.scale(wolf_grandma, (100, 150))
 wolf_grandma_rect = wolf_grandma.get_rect()
 wolf_grandma_rect.x = 550
@@ -146,7 +146,7 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 #default font for displaying text
 font = pygame.font.Font(None, 32)
-narration_font = pygame.font.Font(filename="pygame_demo/PressStart2P-Regular.ttf", size=22)
+narration_font = pygame.font.Font(filename="wolf_canon_rewrite/assets/PressStart2P-Regular.ttf", size=22)
 # Font path for the pixaleted text
 FONT_FILE = "PressStart2P-Regular.ttf"
 #clock for controlling frame rate (i.e. how fast the game loop runs)
@@ -189,7 +189,7 @@ gnome_chat_manager = ChatManager(screen, gnome_ai, GNOME_SYSTEM_PROMPT, font, gn
 # narration manager setup
 #-------------------------
 # load and scale the narration panel specifically for center display
-narration_panel_img = pygame.image.load("pygame_demo/assets/narration_panel.png").convert_alpha()
+narration_panel_img = pygame.image.load("wolf_canon_rewrite/assets/narration_panel.png").convert_alpha()
 narrator = NarrationManager(screen, narration_font, narration_panel_img)
 
 #-------------------------
@@ -370,11 +370,11 @@ def draw_good_ending():
                 stop_sound = True
 
             screen.blit(earth_background, (0,0))
-            draw_animated_text(screen, ["CONGRATULATIONS"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 50) , screen.get_width()//2, screen.get_height()//2 - 250, white, state=state1)
+            draw_animated_text(screen, ["CONGRATULATIONS"],pygame.font.Font("wolf_canon_rewrite/assets/PressStart2P-Regular.ttf", 50) , screen.get_width()//2, screen.get_height()//2 - 250, white, state=state1)
             if state1["done"]:
-                draw_animated_text(screen, ["YOU WIN!"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 90) , screen.get_width()//2, screen.get_height()//2 - 120, white, state=state2)
+                draw_animated_text(screen, ["YOU WIN!"],pygame.font.Font("wolf_canon_rewrite/assets/PressStart2P-Regular.ttf", 90) , screen.get_width()//2, screen.get_height()//2 - 120, white, state=state2)
             if state2["done"]:
-                draw_animated_text(screen, ["Welcome back to Earth"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 20) , screen.get_width()//2, screen.get_height()//2 + 30, white, state=state3)
+                draw_animated_text(screen, ["Welcome back to Earth"],pygame.font.Font("wolf_canon_rewrite/assets/PressStart2P-Regular.ttf", 20) , screen.get_width()//2, screen.get_height()//2 + 30, white, state=state3)
 
 def draw_loading():
     global start_time
