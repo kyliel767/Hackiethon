@@ -222,7 +222,10 @@ class ChatManager:
         # Disappears while AI is thinking or still "typing" response
         is_typing = self.npc_char_index < len(self.active_npc_text)
         if not self.waiting_for_ai and not is_typing:
-            input_surface = self.font.render("> " + self.player_input, True, (255, 255, 255))
+            # cursor for blinking effect
+            cursor = self.get_blinking_cursor()
+            # render the player's input with the cursor
+            input_surface = self.font.render("> " + self.player_input + cursor, True, (255, 255, 255))
             self.screen.blit(input_surface, (self.chat_panel_rect.x + padding_x, input_y))
     
     # returns next game state based on current status after talking with the NPC
@@ -247,3 +250,12 @@ class ChatManager:
             return "chat"
         elif self.npc_name == "Gnome":
             return "minigame"
+        
+    # functionto get a blinking cursor for the player's input when the NPC is not typing
+    def get_blinking_cursor(self):
+        # Use pygame ticks to create a toggle every 500ms (0.5 seconds)
+        # // 500 converts milliseconds to half-second intervals
+        # % 2 == 0 creates a True/False blink pattern
+        if (pygame.time.get_ticks() // 500) % 2 == 0:
+            return "|"
+        return ""
