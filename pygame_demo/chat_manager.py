@@ -118,6 +118,7 @@ class ChatManager:
         for status in ["accepted", "rejected", "ongoing"]:
             tag = f"[STATUS:{status}]"
             if tag in text:
+                print(status)
                 return text.replace(tag, "").strip(), status
         return text.strip(), "ongoing"
     

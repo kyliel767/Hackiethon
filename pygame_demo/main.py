@@ -7,8 +7,6 @@ import sys
 import math
 from dotenv import load_dotenv
 from groq import Groq
-from typewriting import draw_animated_text, make_text_state
-from extract_sprite_sheets import load_spritesheet
 
  # import chat manager class
 from chat_manager import ChatManager
@@ -16,6 +14,10 @@ from chat_manager import ChatManager
 from ai_services import AIClient, RED_SYSTEM_PROMPT, GNOME_SYSTEM_PROMPT
 # import narration manager
 from narration_manager import NarrationManager, HOUSE_NARRATION, FOREST_NARRATION
+# import typewriting effects
+from typewriting import draw_animated_text, make_text_state
+# import load sprite sheets function
+from extract_sprite_sheets import load_spritesheet
 
 # load environment variables for API key
 load_dotenv()
@@ -423,6 +425,10 @@ while running:
             narrator.draw()
     elif game_state == "minigame":
         gnome_chat_manager.draw()
+    elif game_state == "good_ending":
+        draw_good_ending()
+    elif game_state == "bad_ending":
+        draw_bad_ending()
 
 
     # ----
@@ -430,7 +436,11 @@ while running:
     # ----
     if game_state == "chat":
         game_state = red_chat_manager.check_status("chat")
-    
+        if new_state == "win":
+            game_state = "good_ending"
+        elif new_state == "game_over":
+            game_state = "bad_ending"
+
     if game_state == "minigame":
         new_state = gnome_chat_manager.check_status("minigame")
         # only trigger the narration if the state is actually changing right now
@@ -440,10 +450,8 @@ while running:
         else:
             game_state = new_state
 
-    if game_state == "win":
-        draw_good_ending()
-    elif game_state == "game_over":
-        draw_bad_ending()
+    
+    
     
 
     #----------------------------------------
