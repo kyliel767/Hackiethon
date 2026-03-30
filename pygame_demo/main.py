@@ -57,6 +57,14 @@ forest_chat = pygame.transform.scale(forest_chat, (1020, 780))
 earth_background = pygame.image.load("pygame_demo/assets/earth.png")
 earth_background = pygame.transform.scale(earth_background, (1020, 780))
 
+# loading... background
+loading_background = pygame.image.load("pygame_demo/assets/loading.png")
+loading_background = pygame.transform.scale(loading_background, (1020, 780))
+
+# loading... background setup
+start_time = 0
+loading_duration = 2000 
+
 #load failure ending frames into a list
 walk_frames = []
 for i in range(1, 10):
@@ -344,6 +352,13 @@ def draw_good_ending():
             if state2["done"]:
                 draw_animated_text(screen, ["Welcome back to Earth"],pygame.font.Font("pygame_demo/PressStart2P-Regular.ttf", 20) , screen.get_width()//2, screen.get_height()//2 + 30, white, state=state3)
 
+def draw_loading():
+    global start_time
+    global game_state
+    screen.blit(loading_background, (0,0))
+    if pygame.time.get_ticks() - start_time > loading_duration:
+             game_state = "house_narration"
+
 #----------------
 # main game loop
 #----------------
@@ -429,7 +444,8 @@ while running:
         draw_good_ending()
     elif game_state == "bad_ending":
         draw_bad_ending()
-
+    elif game_state == "loading":
+         draw_loading()
 
     # ----
     # status update
@@ -445,7 +461,8 @@ while running:
         new_state = gnome_chat_manager.check_status("minigame")
         # only trigger the narration if the state is actually changing right now
         if new_state == "house_narration":
-            game_state = "house_narration"
+            game_state = "loading"
+            start_time = pygame.time.get_ticks()
             narrator.start_narration(HOUSE_NARRATION)
         else:
             game_state = new_state
